@@ -1,4 +1,4 @@
-package tk.perryma.circuitpythonfirmata4j;
+package tk.perryma.circuitplaygroundfirmata4j;
 
 import javax.vecmath.Vector3d;
 

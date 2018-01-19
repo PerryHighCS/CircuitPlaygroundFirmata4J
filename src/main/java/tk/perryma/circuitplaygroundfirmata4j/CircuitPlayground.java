@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tk.perryma.circuitpythonfirmata4j;
+package tk.perryma.circuitplaygroundfirmata4j;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
-import org.firmata4j.firmata.FirmataDevice;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 import javax.vecmath.Vector3d;
+import jssc.SerialPortList;
+import org.firmata4j.firmata.FirmataDevice;
+import org.firmata4j.IOEvent;
 import org.firmata4j.Pin;
+import org.firmata4j.ui.JPinboard;
 
 /**
  *
@@ -34,25 +39,34 @@ public class CircuitPlayground extends FirmataDevice {
         addAccelerationListener((data) -> this.setAccelerationData(data));
         addTapListener((data) -> this.setTapData(data));
         addTouchListener((pin, data) -> this.setTouchData(pin, data));
-        
-        // Connect hardwired peripherials to their pins
-        lightSensor = getPin(5);
-        lightSensor.setMode(Pin.Mode.ANALOG);
-        
-        temperatureSensor = getPin(0);
-        temperatureSensor.setMode(Pin.Mode.ANALOG);
-        
-        microphone = getPin(4);
-        microphone.setMode(Pin.Mode.ANALOG);
-        
-        leftButton = getPin(4);
-        leftButton.setMode(Pin.Mode.INPUT);
-        
-        rightButton = getPin(19);
-        rightButton.setMode(Pin.Mode.INPUT);
-        
-        slideSwitch = getPin(21);
-        slideSwitch.setMode(Pin.Mode.INPUT);
+
+        addEventListener(new IODeviceStartListener() {
+            @Override
+            public void onStart(IOEvent ioe) {
+                try {
+                    // Connect hardwired peripherials to their pins
+                    lightSensor = getPin(23);
+                    lightSensor.setMode(Pin.Mode.ANALOG);
+
+                    temperatureSensor = getPin(18);
+                    temperatureSensor.setMode(Pin.Mode.ANALOG);
+
+                    microphone = getPin(22);
+                    microphone.setMode(Pin.Mode.ANALOG);
+
+                    leftButton = getPin(4);
+                    leftButton.setMode(Pin.Mode.INPUT);
+
+                    rightButton = getPin(19);
+                    rightButton.setMode(Pin.Mode.INPUT);
+
+                    slideSwitch = getPin(21);
+                    slideSwitch.setMode(Pin.Mode.INPUT);
+                }
+                catch (IOException e) {                
+                }
+            }
+        });
     }
     
     /*
@@ -443,5 +457,31 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public Color getSensedColor() {
         return sensed;
+    }
+    
+    public static void main(String[] args) {
+        String[] portNames = SerialPortList.getPortNames();
+        for (String portName : portNames) {
+            System.out.println(portName);
+        }
+        try {
+            CircuitPlayground device = new CircuitPlayground("COM7");
+            device.start();
+            device.ensureInitializationIsDone();
+            
+            /*
+            JPinboard pinboard = new JPinboard(device);
+            JFrame frame = new JFrame("Pinboard Example");
+            frame.add(pinboard);
+            frame.pack();
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+            */
+        }
+        catch (IOException e) {
+            System.out.println(e.toString());
+        }
+        catch (InterruptedException e) {            
+        }
     }
 }

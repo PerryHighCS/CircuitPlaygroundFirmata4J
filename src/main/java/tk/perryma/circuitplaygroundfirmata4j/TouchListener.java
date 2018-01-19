@@ -1,4 +1,4 @@
-package tk.perryma.circuitpythonfirmata4j;
+package tk.perryma.circuitplaygroundfirmata4j;
 
 /**
  * A single method interface that allows processing of capacitive touch on the

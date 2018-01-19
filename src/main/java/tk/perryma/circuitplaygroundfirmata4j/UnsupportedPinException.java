@@ -1,4 +1,4 @@
-package tk.perryma.circuitpythonfirmata4j;
+package tk.perryma.circuitplaygroundfirmata4j;
 
 /**
  * Thrown to indicate that an operation has been requested for a pin that does

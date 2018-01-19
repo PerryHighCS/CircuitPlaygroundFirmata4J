@@ -1,6 +1,6 @@
-package tk.perryma.circuitpythonfirmata4j;
+package tk.perryma.circuitplaygroundfirmata4j;
 
-import tk.perryma.circuitpythonfirmata4j.CircuitPlayground.Tap;
+import tk.perryma.circuitplaygroundfirmata4j.CircuitPlayground.Tap;
 
 /**
  * A single method interface that allows processing of taps on the Circuit 
