@@ -15,7 +15,6 @@ import jssc.SerialPortList;
 import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.IOEvent;
 import org.firmata4j.Pin;
-import org.firmata4j.firmata.parser.ParsingSysexMessageState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.ui.JPinboard;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToke
  */
 public class CircuitPlayground extends FirmataDevice {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParsingSysexMessageState.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CircuitPlayground.class);
 
     private Pin lightSensor;
     private Pin temperatureSensor;
@@ -41,7 +40,7 @@ public class CircuitPlayground extends FirmataDevice {
     /**
      * Create a CircuitPlayground instance connected to a given serial port.
      * 
-     * @param portName 
+     * @param portName
      *          The (OS Dependant) filename for the serial port the Circuit
      *          Playground is connected to
      */
@@ -116,7 +115,8 @@ public class CircuitPlayground extends FirmataDevice {
      *          If command cannot be sent due to connection issues
      */
     public void setNeoPixelColor(int pixelNum, Color color) throws IOException {
-        
+        sendMessage(CircuitPlaygroundMessageFactory.setNeoPixel(pixelNum,
+            color.getRed(), color.getGreen(), color.getBlue()));
     }
     
     /**
@@ -151,13 +151,13 @@ public class CircuitPlayground extends FirmataDevice {
      * are set to 20% brightness.
      *
      * @param brightness The brightness level to cap all NeoPixels at, as an
-     * integer percentage from 0 - 100.
+     *          integer percentage from 0 - 100.
      * 
      * @throws java.io.IOException 
      *          If command cannot be sent due to connection issues
      */
     public void setNeoPixelBrightness(int brightness) throws IOException {
-
+        sendMessage(CircuitPlaygroundMessageFactory.setNeoPixelBrightness(brightness));
     }
 
     /*
@@ -185,9 +185,12 @@ public class CircuitPlayground extends FirmataDevice {
 
     /**
      * Stop the playback of any currently playing tone.
-     */
-    public void stopTone() {
 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
+     */
+    public void stopTone() throws IOException {
+        sendMessage(CircuitPlaygroundMessageFactory.stopTone);
     }
 
     /*
@@ -266,18 +269,75 @@ public class CircuitPlayground extends FirmataDevice {
     /**
      * Get the last received acceleration data. If no data has been received
      * since the last call to requestAccelData(), this method returns a null.
+     * Acceleration is measured in meters per second squared
      *
      * @return The last acceleration reading received. If requestAccelData() was
      * called, this method returns null until new data is received, then returns
      * that new data.
-     * 
-     * @throws java.io.IOException 
-     *          If command cannot be sent due to connection issues
      */
-    public Vector3d accelData() throws IOException {
+    public Vector3d accelData() {
         return accel;
     }
 
+    /**
+     * Get the x component of the last received acceleration data. If no data
+     * has been received since the last call to requestAccelData(), this method
+     * returns Double.NaN.
+     * 
+     * Acceleration is measured in meters per second squared
+     * 
+     * @return The x component of the last acceleration reading received, NaN if
+     * there is no data.
+     */
+    public double getAccelX() {
+        if (accel == null) {
+            return Double.NaN;
+        }
+        else {
+            return accel.x;
+        }
+    }
+
+    
+    /**
+     * Get the y component of the last received acceleration data. If no data
+     * has been received since the last call to requestAccelData(), this method
+     * returns Double.NaN.
+     * 
+     * Acceleration is measured in meters per second squared
+     * 
+     * @return The y component of the last acceleration reading received, NaN if
+     * there is no data.
+     */
+    public double getAccelY() {
+        if (accel == null) {
+            return Double.NaN;
+        }
+        else {
+            return accel.y;
+        }
+    }
+    
+    
+    /**
+     * Get the z component of the last received acceleration data. If no data
+     * has been received since the last call to requestAccelData(), this method
+     * returns Double.NaN.
+     *      
+     * Acceleration is measured in meters per second squared
+     * 
+     * @return The z component of the last acceleration reading received, NaN if
+     * there is no data.
+     */
+    public double getAccelZ() {
+        if (accel == null) {
+            return Double.NaN;
+        }
+        else {
+            return accel.z;
+        }
+    }
+    
     /**
      * Add a new listener for acceleration data. The AccelerationListener's
      * onAccelData() method will be called with the acceleration vector whenever
@@ -517,11 +577,33 @@ public class CircuitPlayground extends FirmataDevice {
     protected void handleEvent(Event event) {
         switch (event.getName()) {
             case TOUCH_MESSAGE:
-                LOGGER.info(event.getName());
+                LOGGER.debug(event.getName());
                 break;
             default:
                 super.handleEvent(event);
         }
+    }
+    
+    /**
+     * Send a binary message, logging the message
+     * 
+     * @param message 
+     * 
+     * @throws IOException
+     */
+    @Override
+    public void sendMessage(byte[] message) throws IOException {
+        String MessageHex = "";
+        
+        for (byte b : message) {
+            if (!MessageHex.isEmpty()) {
+                MessageHex += ", ";
+            }
+            MessageHex += Integer.toHexString((int)b);
+        }        
+                
+        LOGGER.info("Sending Message: [" + MessageHex + "]");
+        super.sendMessage(message);
     }
 
     public static void main(String[] args) {
@@ -530,9 +612,23 @@ public class CircuitPlayground extends FirmataDevice {
             System.out.println(portName);
         }
         try {
-            CircuitPlayground device = new CircuitPlayground("COM7");
+            CircuitPlayground device = new CircuitPlayground("COM6");
             device.start();
             device.ensureInitializationIsDone();
+            
+            device.setNeoPixelBrightness(30);
+            device.setNeoPixelColor(0, Color.red);
+            device.setNeoPixelColor(1, Color.orange);
+            device.setNeoPixelColor(2, Color.yellow);
+            device.setNeoPixelColor(3, Color.green);
+            device.setNeoPixelColor(4, Color.blue);
+            device.setNeoPixelColor(5, Color.magenta);
+            device.setNeoPixelColor(6, Color.pink);
+            device.setNeoPixelColor(7, Color.darkGray);
+            device.setNeoPixelColor(8, Color.lightGray);
+            device.setNeoPixelColor(9, Color.white);
+            device.showNeoPixels();
+                        
             device.streamTouchData(12, true);
             device.playTone(1000, 100);
             
@@ -545,8 +641,10 @@ public class CircuitPlayground extends FirmataDevice {
 
         } catch (IOException e) {
             System.out.println(e.toString());
+            System.exit(1);
         }
         catch (InterruptedException e) {
+            System.exit(0);
         }
     }
 }

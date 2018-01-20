@@ -37,7 +37,7 @@ public class ParsingTouchResponseState extends AbstractState {
             int level = parseInt(buffer, 3) >> 1;                
             evt.setBodyItem(TOUCH_LEVEL, level);
 
-            LOGGER.info("Touch event on pin [" + evt.getBodyItem(PIN_ID) + "] :" + evt.getBodyItem(TOUCH_LEVEL));
+            LOGGER.debug("Touch event on pin [" + evt.getBodyItem(PIN_ID) + "] :" + evt.getBodyItem(TOUCH_LEVEL));
             publish(evt);
             transitTo(WaitingForMessageState.class);                
             count = 0;

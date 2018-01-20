@@ -7,6 +7,9 @@ import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToke
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CIRCUIT_PLAYGROUND_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CLEAR_NEOPIXELS_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.PLAY_TONE_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.SET_NEOPIXEL_BRIGHTNESS;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.SET_NEOPIXEL_COLOR_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.STOP_TONE_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.UPDATE_NEOPIXELS_CMD;
 
 /**
@@ -18,6 +21,7 @@ public class CircuitPlaygroundMessageFactory {
     /*
     {
             START_SYSEX, 
+            CIRCUIT_PLAYGROUND_CMD,
             END_SYSEX     
     };
     */
@@ -36,6 +40,42 @@ public class CircuitPlaygroundMessageFactory {
             END_SYSEX     
     };
     
+    public static byte[] setNeoPixel(int pixel, int red, int green, int blue) {
+        red &= 0xFF;
+        green &= 0xFF;
+        blue &= 0xFF;
+        
+        byte[] bytes = new byte[4];
+        bytes[0] = (byte) (red >> 1);                          // Pack RGB 8-bit values 
+        bytes[1] = (byte) ((red >> 7 << 6) | green >> 2);      // tightly into 4 7-bit
+        bytes[2] = (byte) ((green >> 6 << 5) | (blue >> 3));   // bytes
+        bytes[3] = (byte) (blue >> 5 << 4);
+        
+        return new byte[] {
+            START_SYSEX, 
+            CIRCUIT_PLAYGROUND_CMD,
+            SET_NEOPIXEL_COLOR_CMD,
+            (byte) pixel,
+            bytes[0],
+            bytes[1],
+            bytes[2],
+            bytes[3],
+            END_SYSEX     
+        };
+    }
+    
+    public static byte[] setNeoPixelBrightness(int brightness) {
+        brightness = Math.min(100, Math.abs(brightness)); // Limit brightness to 0-100
+
+        return new byte[] {
+            START_SYSEX, 
+            CIRCUIT_PLAYGROUND_CMD,
+            SET_NEOPIXEL_BRIGHTNESS,
+            (byte) brightness,
+            END_SYSEX     
+        };
+    }
+    
     public static byte[] playTone(int freq, int duration) {
         return new byte[] {
             START_SYSEX, 
@@ -48,6 +88,13 @@ public class CircuitPlaygroundMessageFactory {
             END_SYSEX 
         };
     }
+    
+    public static byte[] stopTone = {
+            START_SYSEX, 
+            CIRCUIT_PLAYGROUND_CMD,
+            STOP_TONE_CMD,
+            END_SYSEX     
+    };
     
     public static byte[] requestTouchReading(int pin) {
         switch (pin) {

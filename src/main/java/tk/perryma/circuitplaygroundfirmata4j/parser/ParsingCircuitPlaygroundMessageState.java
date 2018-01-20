@@ -22,7 +22,7 @@ import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToke
  */
 public class ParsingCircuitPlaygroundMessageState extends AbstractState {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParsingSysexMessageState.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParsingCircuitPlaygroundMessageState.class);
     private static final Map<Byte, Class<? extends State>> STATES;
     
     static {
@@ -42,7 +42,7 @@ public class ParsingCircuitPlaygroundMessageState extends AbstractState {
             LOGGER.error("Unsupported Circuit Playground message {}.", b);
             nextState = WaitingForMessageState.class;
         }
-        LOGGER.info("CP Message: " + nextState.getSimpleName());
+        LOGGER.debug("CP Message: " + nextState.getSimpleName());
         transitTo(nextState);
     }
 }
