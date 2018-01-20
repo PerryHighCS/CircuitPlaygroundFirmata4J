@@ -26,6 +26,10 @@ public class CircuitPlaygroundMessageFactory {
     };
     */
     
+    /**
+     * Create a command that will update the physical NeoPixels from the color
+     * buffer
+     */
     public static byte[] updateNeoPixels = {
             START_SYSEX, 
             CIRCUIT_PLAYGROUND_CMD,
@@ -33,6 +37,9 @@ public class CircuitPlaygroundMessageFactory {
             END_SYSEX     
     };
     
+    /**
+     * Create a command to erase all colors in the NeoPixel buffer
+     */
     public static byte[] clearNeoPixels = {
             START_SYSEX, 
             CIRCUIT_PLAYGROUND_CMD,
@@ -40,6 +47,20 @@ public class CircuitPlaygroundMessageFactory {
             END_SYSEX     
     };
     
+    /**
+     * Create a command to update the color of one NeoPixel in the color buffer
+     * 
+     * @param pixel
+     *          The NeoPixel index to update
+     * @param red
+     *          The red component of the new color (0-255)
+     * @param green
+     *          The green component of the new color (0-255)
+     * @param blue
+     *          The blue component of the new color (0-255)
+     * @return 
+     *          A message that will set the color of the given pixel
+     */
     public static byte[] setNeoPixel(int pixel, int red, int green, int blue) {
         red &= 0xFF;
         green &= 0xFF;
@@ -64,6 +85,16 @@ public class CircuitPlaygroundMessageFactory {
         };
     }
     
+    /**
+     * Create a command message that will change the brightness of all the
+     * NeoPixels
+     * 
+     * @param brightness
+     *          The brightness level to set the neopixels to (0-100)
+     * @return 
+     *          The message that will set the brightness level of all of the
+     *          NeoPixels
+     */
     public static byte[] setNeoPixelBrightness(int brightness) {
         brightness = Math.min(100, Math.abs(brightness)); // Limit brightness to 0-100
 
@@ -76,6 +107,18 @@ public class CircuitPlaygroundMessageFactory {
         };
     }
     
+    /**
+     * Create a message that will play a note of a given frequency for a given
+     * duration
+     * 
+     * @param freq
+     *          The frequency of the note to play (0-16383Hz)
+     * @param duration
+     *          The length of time to play the note (0-16383ms) 0 plays 
+     *          continuously until stopped
+     * @return 
+     *          The message that will play the given note for the given duration
+     */
     public static byte[] playTone(int freq, int duration) {
         return new byte[] {
             START_SYSEX, 
@@ -89,6 +132,10 @@ public class CircuitPlaygroundMessageFactory {
         };
     }
     
+    
+    /**
+     * A message that will stop any playing note
+     */
     public static byte[] stopTone = {
             START_SYSEX, 
             CIRCUIT_PLAYGROUND_CMD,
@@ -96,6 +143,14 @@ public class CircuitPlaygroundMessageFactory {
             END_SYSEX     
     };
     
+    /**
+     * Create a message that will get the current touch reading for a given pin
+     * 
+     * @param pin
+     *          The pin that will be read for touch data
+     * @return 
+     *          The message that will request touch data for the given pin
+     */
     public static byte[] requestTouchReading(int pin) {
         switch (pin) {
             case 0:
@@ -117,6 +172,16 @@ public class CircuitPlaygroundMessageFactory {
                 throw new UnsupportedPinException("Pin " + pin + " does not support capacitive touch.");                
         }
     }
+    
+    /**
+     * Create a message that will request that the Circuit Playground stream
+     * touch data for a given pin
+     * 
+     * @param pin
+     *          The pin that will be read for touch data
+     * @return 
+     *          The message that requests a stream of data for the given pin
+     */
     public static byte[] streamTouchData(int pin) {
         switch (pin) {
             case 0:
@@ -138,4 +203,6 @@ public class CircuitPlaygroundMessageFactory {
                 throw new UnsupportedPinException("Pin " + pin + " does not support capacitive touch.");                
         }
     }
+    
+    
 }

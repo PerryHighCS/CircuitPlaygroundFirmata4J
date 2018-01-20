@@ -264,6 +264,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void setAccelRange(AccelTapRange sensitivity) throws IOException {
 
+        //TODO: add request for tap data
     }
 
     /**
@@ -347,6 +348,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public final void addAccelerationListener(AccelerationListener al) {
 
+        //TODO: add listener handler
     }
 
     private void setAccelerationData(Vector3d data) {
@@ -410,6 +412,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void streamTapData(boolean enable) throws IOException {
 
+        //TODO: add request for tap data
     }
 
     /**
@@ -424,6 +427,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void setTapConfiguration(Tap detect, AccelTapRange sensitivity) throws IOException {
 
+        //TODO: add request for tap data
     }
 
     /**
@@ -434,6 +438,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public final void addTapListener(TapListener tl) {
 
+        //TODO: add listener handler
     }
 
     private void setTapData(Tap data) {
@@ -534,6 +539,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public final void addTouchListener(TouchListener tl) {
 
+        //TODO: addlistener handler
     }
 
     private void setTouchData(int pin, int data) {
@@ -599,7 +605,7 @@ public class CircuitPlayground extends FirmataDevice {
             if (!MessageHex.isEmpty()) {
                 MessageHex += ", ";
             }
-            MessageHex += Integer.toHexString((int)b);
+            MessageHex += Integer.toHexString(b & 0xff);
         }        
                 
         LOGGER.info("Sending Message: [" + MessageHex + "]");
@@ -627,6 +633,9 @@ public class CircuitPlayground extends FirmataDevice {
             device.setNeoPixelColor(7, Color.darkGray);
             device.setNeoPixelColor(8, Color.lightGray);
             device.setNeoPixelColor(9, Color.white);
+            device.showNeoPixels();
+            
+            device.clearNeoPixels();
             device.showNeoPixels();
                         
             device.streamTouchData(12, true);
