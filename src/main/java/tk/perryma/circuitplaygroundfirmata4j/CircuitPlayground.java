@@ -15,12 +15,13 @@ import jssc.SerialPortList;
 import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.IOEvent;
 import org.firmata4j.Pin;
-import static org.firmata4j.firmata.parser.FirmataToken.TOUCH_MESSAGE;
 import org.firmata4j.firmata.parser.ParsingSysexMessageState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.ui.JPinboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_MESSAGE;
+
 
 /**
  *
@@ -37,7 +38,14 @@ public class CircuitPlayground extends FirmataDevice {
     private Pin rightButton;
     private Pin slideSwitch;
 
-    public CircuitPlayground(String portName) throws IOException {
+    /**
+     * Create a CircuitPlayground instance connected to a given serial port.
+     * 
+     * @param portName 
+     *          The (OS Dependant) filename for the serial port the Circuit
+     *          Playground is connected to
+     */
+    public CircuitPlayground(String portName) {
         super(portName);
 
         // Initialize touch data with invalid reading
@@ -47,7 +55,19 @@ public class CircuitPlayground extends FirmataDevice {
         addAccelerationListener((data) -> this.setAccelerationData(data));
         addTapListener((data) -> this.setTapData(data));
         addTouchListener((pin, data) -> this.setTouchData(pin, data));
+    }
 
+    /**
+     * Connect to the CircuitPlayground
+     * 
+     * @throws java.io.IOException 
+     *          If a connection cannot be made to the given port or the 
+     *          necessary startup commands cannot be sent.
+     */
+    @Override
+    public void start() throws IOException {
+        
+        // Add listeners for the built in sensors
         addEventListener(new IODeviceStartListener() {
             @Override
             public void onStart(IOEvent ioe) {
@@ -74,26 +94,52 @@ public class CircuitPlayground extends FirmataDevice {
                 }
             }
         });
+        
+        super.start();
     }
-
+    
     /*
      * Neo Pixel Commands ******************************************************
      */
+    
+    /**
+     * Buffer a new color for the selected NeoPixel. The NeoPixel will not
+     * change colors until showNeoPixels is called, then all NeoPixels will
+     * update to their buffered colors simultaneously.
+     * 
+     * @param pixelNum 
+     *          The number of the NeoPixel to change (0-9)
+     * @param color 
+     *          The color to make the NeoPixel
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
+     */
+    public void setNeoPixelColor(int pixelNum, Color color) throws IOException {
+        
+    }
+    
     /**
      * Push the current NeoPixel color buffer out to the physical pixels. After
      * calling this methods the pixels will update their colors to the last
      * colors set for each pixel.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void showNeoPixels() {
-
+    public void showNeoPixels() throws IOException {
+        sendMessage(CircuitPlaygroundMessageFactory.updateNeoPixels);
     }
 
     /**
      * Reset all of the NeoPixel colors in the color buffer to black. The
      * physical NeoPixels will not change color until showNeoPixels is called.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues                              
      */
-    public void clearNeoPixels() {
-
+    public void clearNeoPixels() throws IOException {
+        sendMessage(CircuitPlaygroundMessageFactory.clearNeoPixels);
     }
 
     /**
@@ -106,8 +152,11 @@ public class CircuitPlayground extends FirmataDevice {
      *
      * @param brightness The brightness level to cap all NeoPixels at, as an
      * integer percentage from 0 - 100.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void setNeoPixelBrightness(int brightness) {
+    public void setNeoPixelBrightness(int brightness) throws IOException {
 
     }
 
@@ -126,6 +175,9 @@ public class CircuitPlayground extends FirmataDevice {
      * @param duration The length of time to play the tone, in milliseconds
      * 0-16383ms. Note that a value of 0 will play a tone without a duration,
      * the tone will play until stopTone() is called.
+
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
     public void playTone(int freq, int duration) throws IOException {
         sendMessage(CircuitPlaygroundMessageFactory.playTone(freq, duration));
@@ -169,8 +221,11 @@ public class CircuitPlayground extends FirmataDevice {
      * Request a single accelerometer reading. The accelerometer reading can be
      * accessed by calling accelData() or by adding a listener with
      * addAccelerationListener().
+
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void requestAccelData() {
+    public void requestAccelData() throws IOException {
         accel = null;
 
         //TODO: add request for tap data
@@ -184,8 +239,11 @@ public class CircuitPlayground extends FirmataDevice {
      *
      * @param enable Enable or disable the streaming of acceleration data. True
      * begins streaming, false stops streaming.
+
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void streamAccelData(boolean enable) {
+    public void streamAccelData(boolean enable) throws IOException {
         accel = null;
 
         //TODO: add request for data stream
@@ -197,8 +255,11 @@ public class CircuitPlayground extends FirmataDevice {
      * @param sensitivity Set the range of acceptable accelerometer values.
      * Increasing the range will allow you to read higher forces, but will
      * reduce the accuracy of the readings. The default range is +/- 2G.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void setAccelRange(AccelTapRange sensitivity) {
+    public void setAccelRange(AccelTapRange sensitivity) throws IOException {
 
     }
 
@@ -209,8 +270,11 @@ public class CircuitPlayground extends FirmataDevice {
      * @return The last acceleration reading received. If requestAccelData() was
      * called, this method returns null until new data is received, then returns
      * that new data.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public Vector3d accelData() {
+    public Vector3d accelData() throws IOException {
         return accel;
     }
 
@@ -256,8 +320,11 @@ public class CircuitPlayground extends FirmataDevice {
      * Request that the CircuitPlayground send the most recent tap data. The tap
      * data can subsequently be accessed by calling tapData() or through a
      * TapListener.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void requestTapData() {
+    public void requestTapData() throws IOException {
         this.tapData = null;
     }
 
@@ -277,8 +344,11 @@ public class CircuitPlayground extends FirmataDevice {
      * Tap readings are sent every 20 milliseconds when enabled.
      *
      * @param enable True to begin streaming tap data, false to stop
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void streamTapData(boolean enable) {
+    public void streamTapData(boolean enable) throws IOException {
 
     }
 
@@ -288,8 +358,11 @@ public class CircuitPlayground extends FirmataDevice {
      * @param detect What type of tap to detect, NONE, SINGLE, or DOUBLE.
      * Detecting DOUBLE taps also detects SINGLE taps.
      * @param sensitivity The required force for tap detection.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void setTapConfiguration(Tap detect, AccelTapRange sensitivity) {
+    public void setTapConfiguration(Tap detect, AccelTapRange sensitivity) throws IOException {
 
     }
 
@@ -319,7 +392,9 @@ public class CircuitPlayground extends FirmataDevice {
      *
      * @param pin The pin to get touch data for must be one of: 0, 1, 2, 3, 6,
      * 9, 10, or 12.
-     * @throws java.io.IOException
+     
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
     public void requestTouchReading(int pin) throws IOException {
         if (pin >= 0 && pin < touchData.length) {
@@ -368,6 +443,9 @@ public class CircuitPlayground extends FirmataDevice {
      * @param pin The touch pin to check for data from, must be one of: 0, 1, 2,
      * 3, 6, 9, 10, or 12
      * @param enable True to begin streaming touch data, false to stop
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
     public void streamTouchData(int pin, boolean enable) throws IOException {
         switch (pin) {
@@ -413,8 +491,11 @@ public class CircuitPlayground extends FirmataDevice {
      * sense using the light sensor and NeoPixel #1. The response can be checked
      * through subsequent calls to getSensedColor or by adding a
      * SensedColorListener.
+     * 
+     * @throws java.io.IOException 
+     *          If command cannot be sent due to connection issues
      */
-    public void requestColorSense() {
+    public void requestColorSense() throws IOException {
         sensed = null;
 
         //TODO: add a request for data
@@ -453,7 +534,7 @@ public class CircuitPlayground extends FirmataDevice {
             device.start();
             device.ensureInitializationIsDone();
             device.streamTouchData(12, true);
-            device.playTone(1000, 200);
+            device.playTone(1000, 100);
             
             JPinboard pinboard = new JPinboard(device);
             JFrame frame = new JFrame("Pinboard Example");

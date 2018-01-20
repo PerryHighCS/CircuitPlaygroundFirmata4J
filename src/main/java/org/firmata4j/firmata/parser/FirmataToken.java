@@ -120,17 +120,6 @@ public interface FirmataToken {
     public static final byte SCHEDULER_DATA          = 0x7B; // send a createtask/deletetask/addtotask/schedule/querytasks/querytask request to the scheduler
     public static final byte SYSEX_NON_REALTIME      = 0x7E; // MIDI Reserved for non-realtime messages
     public static final byte SYSEX_REALTIME          = 0x7F; // MIDI Reserved for realtime messages
-    
-    // Circuit Playground messages and responses
-    public static final byte PLAY_TONE_CMD           = 0x20; // Play a tone for a specified duration
-    public static final byte ACCEL_RESPONSE          = 0x36; // Accelerometer read response
-    public static final byte TAP_RESPONSE            = 0x37; // Tap detection response
-    public static final byte CIRCUIT_PLAYGROUND_CMD  = 0x40; // Start a Circuit Playground Command
-    public static final byte CIRCUIT_PLAYGROUND_MSG  = 0x40; // Start a Circuit Playground Command
-    public static final byte CAP_TOUCH_READING       = 0x40; // Request a single capacitive touch reading
-    public static final byte CAP_TOUCH_STREAM        = 0x41; // Request continuous capacitive touch readings
-    public static final byte TOUCH_RESPONSE          = 0x43; // Capacitive touch response
-    public static final byte COLOR_SENSE_RESPONSE    = 0x51; // Color sense response
 
     // pin modes
     public static final byte PIN_MODE_INPUT          = 0x00; // defined in wiring.h
@@ -190,9 +179,5 @@ public interface FirmataToken {
     
     public static final String ERROR_MESSAGE = "error";
     public static final String ERROR_DESCRIPTION = "description";
-    public static final String ERROR_CAUSE = "cause";
-    
-    public static final String TOUCH_MESSAGE = "touch";
-    public static final String TOUCH_LEVEL = "touchLevel";
-    
+    public static final String ERROR_CAUSE = "cause";    
 }

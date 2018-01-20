@@ -34,11 +34,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.firmata4j.firmata.parser.FirmataToken.*;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CIRCUIT_PLAYGROUND_MSG;
 import tk.perryma.circuitplaygroundfirmata4j.parser.ParsingCircuitPlaygroundMessageState;
 
 /**
  * This state parses type of sysex message and transfers FSM to the state which
- * is able to handle the message.<br/>
+ * is able to handle the message.<br>
  * If the state receives unknown type of sysex message, it transfers FSM to
  * {@link WaitingForMessageState}.
  *

@@ -7,7 +7,6 @@ package tk.perryma.circuitplaygroundfirmata4j.parser;
 
 import java.util.HashMap;
 import java.util.Map;
-import static org.firmata4j.firmata.parser.FirmataToken.TOUCH_RESPONSE;
 import org.firmata4j.firmata.parser.ParsingSysexMessageState;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import org.firmata4j.fsm.AbstractState;
@@ -15,6 +14,7 @@ import org.firmata4j.fsm.FiniteStateMachine;
 import org.firmata4j.fsm.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_RESPONSE;
 
 /**
  *

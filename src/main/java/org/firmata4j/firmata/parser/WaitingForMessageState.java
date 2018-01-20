@@ -33,13 +33,14 @@ import org.firmata4j.fsm.FiniteStateMachine;
 import static org.firmata4j.firmata.parser.FirmataToken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CIRCUIT_PLAYGROUND_MSG;
 import tk.perryma.circuitplaygroundfirmata4j.parser.ParsingCircuitPlaygroundMessageState;
 
 /**
- * This is initial default state of {@link FirmataDevice}.<br/>
+ * This is initial default state of {@link FirmataDevice}.<br>
  * The state is waiting for command and determines to which state transfers to
  * parse further data. It extracts additional data from a command byte, when the
- * command contains that, and hands it to the next state.<br/>
+ * command contains that, and hands it to the next state.<br>
  * The state skips unknown command bytes throwing events with error messages.
  *
  * @author Oleg Kurbatov &lt;o.v.kurbatov@gmail.com&gt;

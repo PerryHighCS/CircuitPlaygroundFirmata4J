@@ -3,8 +3,6 @@ package tk.perryma.circuitplaygroundfirmata4j.parser;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import static org.firmata4j.firmata.parser.FirmataToken.FIRMATA_MESSAGE_EVENT_TYPE;
 import static org.firmata4j.firmata.parser.FirmataToken.PIN_ID;
-import static org.firmata4j.firmata.parser.FirmataToken.TOUCH_LEVEL;
-import static org.firmata4j.firmata.parser.FirmataToken.TOUCH_MESSAGE;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.MIDIParser.parseByte;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.MIDIParser.parseInt;
 import org.firmata4j.fsm.AbstractState;
@@ -12,6 +10,8 @@ import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_LEVEL;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_MESSAGE;
 
 /**
  *
