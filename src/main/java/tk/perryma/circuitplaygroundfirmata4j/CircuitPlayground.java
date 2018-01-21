@@ -7,18 +7,29 @@ package tk.perryma.circuitplaygroundfirmata4j;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
+import java.util.List;
 import javax.vecmath.Vector3d;
 import jssc.SerialPortList;
 import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.IOEvent;
 import org.firmata4j.Pin;
+import static org.firmata4j.firmata.parser.FirmataToken.PIN_ID;
 import org.firmata4j.fsm.Event;
-import org.firmata4j.ui.JPinboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.ACCELERATION_MESSAGE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.ACCEL_X;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.ACCEL_Y;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.ACCEL_Z;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_BLUE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_GREEN;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_MESSAGE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_RED;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TAP_DATA;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TAP_MESSAGE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_LEVEL;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_MESSAGE;
 
 
@@ -49,11 +60,6 @@ public class CircuitPlayground extends FirmataDevice {
 
         // Initialize touch data with invalid reading
         Arrays.fill(touchData, -1);
-
-        // Setup default polling listeners
-        addAccelerationListener((data) -> this.setAccelerationData(data));
-        addTapListener((data) -> this.setTapData(data));
-        addTouchListener((pin, data) -> this.setTouchData(pin, data));
     }
 
     /**
@@ -218,7 +224,8 @@ public class CircuitPlayground extends FirmataDevice {
         G16
     };
 
-    Vector3d accel = null;
+    private Vector3d accel = null;
+    private final List<AccelerationListener> accelListeners = new ArrayList<>();
 
     /**
      * Request a single accelerometer reading. The accelerometer reading can be
@@ -231,7 +238,7 @@ public class CircuitPlayground extends FirmataDevice {
     public void requestAccelData() throws IOException {
         accel = null;
 
-        //TODO: add request for tap data
+        sendMessage(CircuitPlaygroundMessageFactory.requestAccelData);
     }
 
     /**
@@ -249,7 +256,12 @@ public class CircuitPlayground extends FirmataDevice {
     public void streamAccelData(boolean enable) throws IOException {
         accel = null;
 
-        //TODO: add request for data stream
+        if (enable) {
+            sendMessage(CircuitPlaygroundMessageFactory.requestAccelStream);
+        }
+        else {
+            sendMessage(CircuitPlaygroundMessageFactory.stopAccelStream);
+        }
     }
 
     /**
@@ -263,8 +275,23 @@ public class CircuitPlayground extends FirmataDevice {
      *          If command cannot be sent due to connection issues
      */
     public void setAccelRange(AccelTapRange sensitivity) throws IOException {
-
-        //TODO: add request for tap data
+        byte sense = 0;
+        
+        switch(sensitivity) {
+            case G2:
+                sense = 0;
+                break;
+            case G4:
+                sense = 1;
+                break;
+            case G8:
+                sense = 2;
+                break;
+            case G16:
+                sense = 3;
+                break;
+        }
+        sendMessage(CircuitPlaygroundMessageFactory.setAccelerometerRange(sense));
     }
 
     /**
@@ -347,14 +374,26 @@ public class CircuitPlayground extends FirmataDevice {
      * @param al The AccelerationListener to receive acceleration data.
      */
     public final void addAccelerationListener(AccelerationListener al) {
-
-        //TODO: add listener handler
+        accelListeners.add(al);
     }
 
     private void setAccelerationData(Vector3d data) {
         this.accel = data;
     }
 
+    private void postAcceleration(Event event) {
+        
+        Vector3d accelVector = new Vector3d((Float)event.getBodyItem(ACCEL_X),
+                (Float)event.getBodyItem(ACCEL_Y),
+                (Float)event.getBodyItem(ACCEL_Z));
+        
+        setAccelerationData(accelVector);
+        
+        accelListeners.forEach((al) -> {
+            al.onAccelData(accelVector);
+        });
+    }
+    
     /*
      * Tap Detection Commands **************************************************
      */
@@ -376,7 +415,8 @@ public class CircuitPlayground extends FirmataDevice {
         DOUBLE
     };
 
-    Tap tapData = null;
+    private Tap tapData = null;
+    private final List<TapListener> tapListeners = new ArrayList<>();
 
     /**
      * Request that the CircuitPlayground send the most recent tap data. The tap
@@ -388,6 +428,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void requestTapData() throws IOException {
         this.tapData = null;
+        sendMessage(CircuitPlaygroundMessageFactory.requestTapData);
     }
 
     /**
@@ -411,8 +452,12 @@ public class CircuitPlayground extends FirmataDevice {
      *          If command cannot be sent due to connection issues
      */
     public void streamTapData(boolean enable) throws IOException {
-
-        //TODO: add request for tap data
+        if (enable) {
+            sendMessage(CircuitPlaygroundMessageFactory.requestTapDataStream);
+        }
+        else {
+            sendMessage(CircuitPlaygroundMessageFactory.stopTapDataStream);
+        }
     }
 
     /**
@@ -426,8 +471,32 @@ public class CircuitPlayground extends FirmataDevice {
      *          If command cannot be sent due to connection issues
      */
     public void setTapConfiguration(Tap detect, AccelTapRange sensitivity) throws IOException {
-
-        //TODO: add request for tap data
+        int numTaps = 0;
+        int threshold = 0;
+        
+        if (detect == Tap.SINGLE) {
+            numTaps = 1;
+        }
+        else if (detect == Tap.DOUBLE) {
+            numTaps = 2;
+        }
+        
+        switch (sensitivity) {
+            case G2:
+                threshold = 80;
+                break;
+            case G4:
+                threshold = 30;
+                break;
+            case G8:
+                threshold = 15;
+                break;
+            case G16:
+                threshold = 5;
+                break;
+        }
+        
+        sendMessage(CircuitPlaygroundMessageFactory.setTapConfiguration(numTaps, threshold));
     }
 
     /**
@@ -437,18 +506,41 @@ public class CircuitPlayground extends FirmataDevice {
      * @param tl The TapListener to receive tap data.
      */
     public final void addTapListener(TapListener tl) {
-
-        //TODO: add listener handler
+        tapListeners.add(tl);
     }
 
     private void setTapData(Tap data) {
         this.tapData = data;
     }
 
+    private void postTapEvent(Event event) {
+        final Tap t;
+        
+        switch ((Integer)event.getBodyItem(TAP_DATA)) {
+            case 0:
+                t = Tap.NONE;
+                break;
+            case 1:
+                t = Tap.SINGLE;
+                break;
+            case 2:
+                t = Tap.DOUBLE;
+                break;
+            default:
+                t = null;
+        }
+        setTapData(t);
+        
+        tapListeners.forEach((tl) -> {
+            tl.onTap(t);
+        });
+    }
+    
     /*
      * Capacitive Touch Commands ***********************************************
      */
     int touchData[] = new int[13];
+    List<TouchListener> touchListeners = new ArrayList<>();
 
     /**
      * Request that the CircuitPlayground send the most recent touch data for a
@@ -523,8 +615,12 @@ public class CircuitPlayground extends FirmataDevice {
             case 10:
             case 12:
                 touchData[pin] = -1;
-                sendMessage(CircuitPlaygroundMessageFactory.streamTouchData(pin));
-
+                if (enable) {
+                    sendMessage(CircuitPlaygroundMessageFactory.requestTouchDataStream(pin));
+                }
+                else {
+                    sendMessage(CircuitPlaygroundMessageFactory.stopTouchDataStream(pin));
+                }
                 break;
             default:
                 throw new UnsupportedPinException("Specified pin does not support touch reading: " + pin);
@@ -538,18 +634,29 @@ public class CircuitPlayground extends FirmataDevice {
      * @param tl The TapListener to receive tap data.
      */
     public final void addTouchListener(TouchListener tl) {
-
-        //TODO: addlistener handler
+        touchListeners.add(tl);
     }
 
     private void setTouchData(int pin, int data) {
         this.touchData[pin] = data;
+    }
+    
+    private void postTouchEvent(Event event) {
+        int pin = (Byte)event.getBodyItem(PIN_ID);
+        int level = (Integer)event.getBodyItem(TOUCH_LEVEL);
+        
+        setTouchData(pin, level);
+        
+        touchListeners.forEach((tl) -> {
+            tl.onTouch(pin, level);
+        });
     }
 
     /*
      * Color Sensing Commands **************************************************
      */
     Color sensed = null;
+    List<ColorListener> colorListeners = new ArrayList<>();
 
     /**
      * Request that the Circuit Playground perform a color sense operation and
@@ -563,8 +670,7 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void requestColorSense() throws IOException {
         sensed = null;
-
-        //TODO: add a request for data
+        sendMessage(CircuitPlaygroundMessageFactory.requestColorSense);
     }
 
     /**
@@ -579,12 +685,51 @@ public class CircuitPlayground extends FirmataDevice {
         return sensed;
     }
 
+    /**
+     * Add a new listener for Color sensing data. The ColorListener's onColor() 
+     * method will be called whenever color sense data is received.
+     *
+     * @param cl The ColorListener to receive color data
+     */
+    public void addColorListener(ColorListener cl) {
+        colorListeners.add(cl);
+    }
+    
+    private void setSensedColor(Color c) {
+        sensed = c;
+    }
+    
+    private void postSensedColor(Event event) {
+        Color c = new Color((Byte)event.getBodyItem(COLOR_RED) & 0xFF,
+            (Byte)event.getBodyItem(COLOR_GREEN) & 0xFF,
+            (Byte)event.getBodyItem(COLOR_BLUE) & 0xFF);
+        
+        setSensedColor(c);
+        
+        colorListeners.forEach((cl) -> {
+            cl.onColor(c);
+        });
+    }
+    
     @Override
     protected void handleEvent(Event event) {
         switch (event.getName()) {
-            case TOUCH_MESSAGE:
-                LOGGER.debug(event.getName());
+            case ACCELERATION_MESSAGE:
+                postAcceleration(event);
                 break;
+                
+            case TOUCH_MESSAGE:
+                postTouchEvent(event);
+                break;
+                
+            case TAP_MESSAGE:
+                postTapEvent(event);
+                break;
+                
+            case COLOR_MESSAGE:
+                postSensedColor(event);
+                break;
+                
             default:
                 super.handleEvent(event);
         }
@@ -622,6 +767,23 @@ public class CircuitPlayground extends FirmataDevice {
             device.start();
             device.ensureInitializationIsDone();
             
+            device.addTouchListener((pin, level) -> {
+                System.out.println("Touch on pin: " + pin + " - " + level);
+            });
+            
+            device.addAccelerationListener((v) -> {
+                System.out.println("Acceleration: <" + v.x + ", " +
+                        v.y + ", " + v.z + ">");
+            });
+            
+            device.addTapListener((t) -> {
+                System.out.println(t + " tap detected");
+            });
+            
+            device.addColorListener((color) -> {
+                System.out.println("Color sensed: " + color);
+            });
+            
             device.setNeoPixelBrightness(30);
             device.setNeoPixelColor(0, Color.red);
             device.setNeoPixelColor(1, Color.orange);
@@ -637,16 +799,17 @@ public class CircuitPlayground extends FirmataDevice {
             
             device.clearNeoPixels();
             device.showNeoPixels();
-                        
+            
+            device.setAccelRange(AccelTapRange.G16);
+            device.streamAccelData(true);
+            
             device.streamTouchData(12, true);
             device.playTone(1000, 100);
             
-            JPinboard pinboard = new JPinboard(device);
-            JFrame frame = new JFrame("Pinboard Example");
-            frame.add(pinboard);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setVisible(true);
+            device.setTapConfiguration(Tap.DOUBLE, AccelTapRange.G2);
+            device.streamTapData(true);
+            
+            device.requestColorSense();
 
         } catch (IOException e) {
             System.out.println(e.toString());

@@ -59,11 +59,8 @@ public class JPin extends JLabel implements PinEventListener {
 
     private Pin model;
     private JPopupMenu modesMenu;
-    private Runnable refreshRoutine = new Runnable() {
-        @Override
-        public void run() {
-            refreshIcon();
-        }
+    private final Runnable refreshRoutine = () -> {
+        refreshIcon();
     };
     private static final Map<Pin.Mode, Map<String, Icon>> ICONS = new HashMap<>();
     private static final Icon DISABLED_OFF;

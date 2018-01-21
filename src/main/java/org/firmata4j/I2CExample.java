@@ -232,22 +232,19 @@ public class I2CExample {
 
     private static void showInitializationMessage() {
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    JFrame frame = INITIALIZATION_FRAME;
-                    frame.setUndecorated(true);
-                    JLabel label = new JLabel("Connecting to device");
-                    label.setHorizontalAlignment(JLabel.CENTER);
-                    frame.add(label);
-                    frame.pack();
-                    frame.setSize(frame.getWidth() + 40, frame.getHeight() + 40);
-                    Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-                    int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-                    int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
-                    frame.setLocation(x, y);
-                    frame.setVisible(true);
-                }
+            SwingUtilities.invokeAndWait(() -> {
+                JFrame frame = INITIALIZATION_FRAME;
+                frame.setUndecorated(true);
+                JLabel label = new JLabel("Connecting to device");
+                label.setHorizontalAlignment(JLabel.CENTER);
+                frame.add(label);
+                frame.pack();
+                frame.setSize(frame.getWidth() + 40, frame.getHeight() + 40);
+                Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+                int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+                frame.setLocation(x, y);
+                frame.setVisible(true);
             });
         } catch (InterruptedException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
@@ -256,12 +253,9 @@ public class I2CExample {
 
     private static void hideInitializationWindow() {
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    INITIALIZATION_FRAME.setVisible(false);
-                    INITIALIZATION_FRAME.dispose();
-                }
+            SwingUtilities.invokeAndWait(() -> {
+                INITIALIZATION_FRAME.setVisible(false);
+                INITIALIZATION_FRAME.dispose();
             });
         } catch (InterruptedException | InvocationTargetException ex) {
             throw new RuntimeException(ex);

@@ -7,13 +7,15 @@ package tk.perryma.circuitplaygroundfirmata4j.parser;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.firmata4j.firmata.parser.ParsingSysexMessageState;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import org.firmata4j.fsm.AbstractState;
 import org.firmata4j.fsm.FiniteStateMachine;
 import org.firmata4j.fsm.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.ACCEL_RESPONSE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_SENSE_RESPONSE;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TAP_RESPONSE;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.TOUCH_RESPONSE;
 
 /**
@@ -28,7 +30,9 @@ public class ParsingCircuitPlaygroundMessageState extends AbstractState {
     static {
         STATES = new HashMap<>();
         STATES.put(TOUCH_RESPONSE , ParsingTouchResponseState.class);
-//        STATES.put(ACCEL_RESPONSE, ParsingAccelResponseState.class);        
+        STATES.put(ACCEL_RESPONSE, ParsingAccelerometerResponseState.class); 
+        STATES.put(COLOR_SENSE_RESPONSE, ParsingColorSenseResponseState.class);
+        STATES.put(TAP_RESPONSE, ParsingTapResponseState.class);
     }
     
     public ParsingCircuitPlaygroundMessageState(FiniteStateMachine fsm) {

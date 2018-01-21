@@ -6,11 +6,21 @@ import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToke
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CAP_TOUCH_STREAM;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CIRCUIT_PLAYGROUND_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.CLEAR_NEOPIXELS_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.COLOR_SENSE_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.PLAY_TONE_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.REQUEST_ACCEL_READING;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.REQUEST_ACCEL_STREAM;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.REQUEST_TAP_DATA;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.REQUEST_TAP_DATA_STREAM;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.SET_ACCEL_RANGE;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.SET_NEOPIXEL_BRIGHTNESS;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.SET_NEOPIXEL_COLOR_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.STOP_ACCEL_STREAM;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.STOP_CAP_TOUCH_STREAM;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.STOP_TAP_DATA_STREAM;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.STOP_TONE_CMD;
 import static tk.perryma.circuitplaygroundfirmata4j.parser.CircuitPlaygroundToken.UPDATE_NEOPIXELS_CMD;
+import static tk.perryma.circuitplaygroundfirmata4j.parser.MIDIParser.byteArray;
 
 /**
  *
@@ -31,20 +41,20 @@ public class CircuitPlaygroundMessageFactory {
      * buffer
      */
     public static byte[] updateNeoPixels = {
-            START_SYSEX, 
-            CIRCUIT_PLAYGROUND_CMD,
-            UPDATE_NEOPIXELS_CMD,
-            END_SYSEX     
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        UPDATE_NEOPIXELS_CMD,
+        END_SYSEX     
     };
     
     /**
      * Create a command to erase all colors in the NeoPixel buffer
      */
     public static byte[] clearNeoPixels = {
-            START_SYSEX, 
-            CIRCUIT_PLAYGROUND_CMD,
-            CLEAR_NEOPIXELS_CMD,
-            END_SYSEX     
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        CLEAR_NEOPIXELS_CMD,
+        END_SYSEX     
     };
     
     /**
@@ -137,12 +147,63 @@ public class CircuitPlaygroundMessageFactory {
      * A message that will stop any playing note
      */
     public static byte[] stopTone = {
-            START_SYSEX, 
-            CIRCUIT_PLAYGROUND_CMD,
-            STOP_TONE_CMD,
-            END_SYSEX     
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        STOP_TONE_CMD,
+        END_SYSEX     
     };
     
+    /**
+     * A message that requests the current accelerometer reading
+     */
+    public static byte[] requestAccelData = {
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        REQUEST_ACCEL_READING,
+        END_SYSEX
+    };
+    
+    /**
+     * A message that requests the Circuit Playground stream the accelerometer
+     * readings
+     */
+    public static byte[] requestAccelStream = {
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        REQUEST_ACCEL_STREAM,
+        END_SYSEX     
+    };
+    
+    /**
+     * A message that requests the Circuit Playground stop streaming the
+     * accelerometer readings
+     */
+    public static byte[] stopAccelStream = {
+        START_SYSEX, 
+        CIRCUIT_PLAYGROUND_CMD,
+        STOP_ACCEL_STREAM,
+        END_SYSEX     
+    };
+    
+    /**
+     * Create a message that sets the sensitivity of the Circuit Playground
+     * 
+     * @param range
+     *          The sensitivity range to set to
+     * @return 
+     *          The message that will update the Circuit Playground's 
+     *          accelerometer sensitivity
+     */
+    public static byte[] setAccelerometerRange(byte range) {
+        return new byte[] {
+            START_SYSEX, 
+            CIRCUIT_PLAYGROUND_CMD,
+            SET_ACCEL_RANGE,
+            range,
+            END_SYSEX     
+        };
+    }
+
     /**
      * Create a message that will get the current touch reading for a given pin
      * 
@@ -182,7 +243,7 @@ public class CircuitPlaygroundMessageFactory {
      * @return 
      *          The message that requests a stream of data for the given pin
      */
-    public static byte[] streamTouchData(int pin) {
+    public static byte[] requestTouchDataStream(int pin) {
         switch (pin) {
             case 0:
             case 1:
@@ -204,5 +265,78 @@ public class CircuitPlaygroundMessageFactory {
         }
     }
     
+    /**
+     * Create a message that will request that the Circuit Playground stop
+     * streaming touch data for a given pin
+     * 
+     * @param pin
+     *          The pin that will be read for touch data
+     * @return 
+     *          The message that requests a stream of data for the given pin
+     */
+    public static byte[] stopTouchDataStream(int pin) {
+        switch (pin) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 6:
+            case 9:
+            case 10:
+            case 12:
+                return new byte[] {
+                    START_SYSEX,
+                    CIRCUIT_PLAYGROUND_CMD,
+                    STOP_CAP_TOUCH_STREAM,
+                    (byte)(pin & 0x7f),
+                    END_SYSEX 
+                };
+            default:
+                throw new UnsupportedPinException("Pin " + pin + " does not support capacitive touch.");                
+        }
+    }
+
+    public static byte[] requestTapData = {
+        START_SYSEX,
+        CIRCUIT_PLAYGROUND_CMD,
+        REQUEST_TAP_DATA,
+        END_SYSEX 
+    };
     
+    public static byte[] requestTapDataStream = {
+        START_SYSEX,
+        CIRCUIT_PLAYGROUND_CMD,
+        REQUEST_TAP_DATA_STREAM,
+        END_SYSEX 
+    };
+    
+    public static byte[] stopTapDataStream = {
+        START_SYSEX,
+        CIRCUIT_PLAYGROUND_CMD,
+        STOP_TAP_DATA_STREAM,
+        END_SYSEX 
+    };
+    
+    public static byte[] setTapConfiguration(int numTaps, int sensitivity) {
+        byte[] taps = byteArray((byte)numTaps);
+        byte[] thresh = byteArray((byte)sensitivity);
+        
+        return new byte[] {
+            START_SYSEX,
+            CIRCUIT_PLAYGROUND_CMD,
+            STOP_TAP_DATA_STREAM,
+            taps[0],
+            taps[1],
+            thresh[0],
+            thresh[1],
+            END_SYSEX
+        };
+    }
+    
+    public static byte[] requestColorSense = {
+        START_SYSEX,
+        CIRCUIT_PLAYGROUND_CMD,
+        COLOR_SENSE_CMD,
+        END_SYSEX 
+    };
 }

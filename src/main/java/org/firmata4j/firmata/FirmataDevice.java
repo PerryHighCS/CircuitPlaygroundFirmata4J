@@ -56,8 +56,8 @@ public class FirmataDevice implements IODevice {
 
     private Parser parser;
     private TransportInterface transport;
-    private final Set<IODeviceEventListener> listeners = Collections.synchronizedSet(new LinkedHashSet<IODeviceEventListener>());
-    private final List<FirmataPin> pins = Collections.synchronizedList(new ArrayList<FirmataPin>());
+    private final Set<IODeviceEventListener> listeners = Collections.synchronizedSet(new LinkedHashSet<>());
+    private final List<FirmataPin> pins = Collections.synchronizedList(new ArrayList<>());
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final AtomicBoolean ready = new AtomicBoolean(false);
     private final AtomicInteger initializedPins = new AtomicInteger(0);
@@ -131,9 +131,9 @@ public class FirmataDevice implements IODevice {
     public void stop() throws IOException {
         shutdown();
         IOEvent event = new IOEvent(this);
-        for (IODeviceEventListener l : listeners) {
+        listeners.forEach((l) -> {
             l.onStop(event);
-        }
+        });
 
     }
 
@@ -174,7 +174,7 @@ public class FirmataDevice implements IODevice {
 
     @Override
     public Set<Pin> getPins() {
-        return new HashSet<Pin>(pins);
+        return new HashSet<>(pins);
     }
 
     @Override
@@ -216,7 +216,7 @@ public class FirmataDevice implements IODevice {
     }
 
     /**
-     * Sends the message to connected Firmata device using open port.<br/>
+     * Sends the message to connected Firmata device using open port.<br>
      * This method is package-wide accessible to be used by {@link FirmataPin}.
      *
      * @param msg the Firmata message
@@ -227,15 +227,15 @@ public class FirmataDevice implements IODevice {
     }
 
     /**
-     * Notifies the device listeners that a pin has changed.<br/>
+     * Notifies the device listeners that a pin has changed.<br>
      * This method is package-wide accessible to be used by {@link FirmataPin}.
      *
      * @param event the event to be send to the listeners
      */
     void pinChanged(IOEvent event) {
-        for (IODeviceEventListener listener : listeners) {
+        listeners.forEach((listener) -> {
             listener.onPinChange(event);
-        }
+        });
     }
 
     /**
