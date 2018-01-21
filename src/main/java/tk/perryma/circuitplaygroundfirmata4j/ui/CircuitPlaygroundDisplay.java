@@ -25,7 +25,11 @@ public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
     private CircuitPlayground cp;
     
     /**
-     * Creates new form CircuitPlaygroundDisplay
+     * Creates new CircuitPlaygroundDisplay to interact with a Circuit 
+     * Playground using firmata
+     * 
+     * @param cp
+     *          The CircuitPlayground to display the status of
      */
     public CircuitPlaygroundDisplay(CircuitPlayground cp) {
         this.cp = cp;
