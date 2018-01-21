@@ -7,7 +7,6 @@ package tk.perryma.circuitplaygroundfirmata4j;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,6 +83,9 @@ public class CircuitPlayground extends FirmataDevice {
 
                     temperatureSensor = getPin(18);
                     temperatureSensor.setMode(Pin.Mode.ANALOG);
+                    
+                    // Add a listener that will turn the analog reading to
+                    // a temperature reading
                     temperatureSensor.addEventListener(new PinValueChangeAdapter(){
                         @Override
                         public void onValueChange(IOEvent event) {
@@ -97,6 +99,7 @@ public class CircuitPlayground extends FirmataDevice {
                                 tempC = Double.NaN;
                             }
                             else {    
+                                // Convert analog values 0-1024 to temperature C
                                 double resistance = ((1023.0 * 
                                         THERM_SERIES_OHMS) / val);
                                 resistance -= THERM_SERIES_OHMS;
@@ -109,106 +112,75 @@ public class CircuitPlayground extends FirmataDevice {
                                 steinhart -= 273.15;
                                 tempC = steinhart;
                             }
-                            
-                            List<WeakReference<TemperatureChangeListener>> purgeList =
-                                    new ArrayList<>();
-                            
+                                                        
                             tempChangeListeners.forEach(tcl -> {
-                                if (tcl.get() != null)
-                                    tcl.get().onTempChange(tempC);
-                                else
-                                    purgeList.add(tcl);
+                                tcl.onTempChange(tempC);                                
                             });
-                            
-                            purgeList.forEach(tcl -> tempChangeListeners.remove(tcl));
                         }                        
                     });
                     
                     microphone = getPin(22);
                     microphone.setMode(Pin.Mode.ANALOG);
+                    
+                    // Add a listener that updates registered listeners
+                    // with the microphone level
                     microphone.addEventListener(new PinValueChangeAdapter() {
                         @Override
                         public void onValueChange(IOEvent event) {
                             micLevel = (int)event.getValue();
                             
-                            List<WeakReference<MicrophoneListener>> purgeList =
-                                    new ArrayList<>();
-                            
                             microphoneListeners.forEach(ml -> {
-                               if (ml.get() != null)
-                                   ml.get().onMicrophoneChange(micLevel);
-                               else
-                                   purgeList.add(ml);
+                                ml.onMicrophoneChange(micLevel);
                             });
-                            
-                            purgeList.forEach(ml -> 
-                                    microphoneListeners.remove(ml));
                         }
                     });
 
                     leftButton = getPin(4);
                     leftButton.setMode(Pin.Mode.INPUT);
+                    
+                    // Add a listener that updates registered listeners with
+                    // the button value
                     leftButton.addEventListener(new PinValueChangeAdapter() {
                         @Override
                         public void onValueChange(IOEvent event) {
                             leftVal = ((int)event.getValue() != 0);
                             
-                            List<WeakReference<ButtonListener>> purgeList =
-                                    new ArrayList<>();
-
                             leftButtonListeners.forEach(bl -> {
-                                if (bl.get() != null)
-                                    bl.get().onChange(leftVal);
-                                else
-                                    purgeList.add(bl);
+                                bl.onChange(leftVal);
                             });
 
-                            purgeList.forEach(bl -> 
-                                    leftButtonListeners.remove(bl));
                         }                        
                     });
 
                     rightButton = getPin(19);
                     rightButton.setMode(Pin.Mode.INPUT);
+
+                    // Add a listener that updates registered listeners with
+                    // the button value
                     rightButton.addEventListener(new PinValueChangeAdapter() {
                         @Override
                         public void onValueChange(IOEvent event) {
                             rightVal = ((int)event.getValue() != 0);
-                                
-                            List<WeakReference<ButtonListener>> purgeList =
-                                    new ArrayList<>();
 
                             rightButtonListeners.forEach(bl -> {
-                                if (bl.get() != null)
-                                    bl.get().onChange(rightVal);
-                                else
-                                    purgeList.add(bl);
+                                bl.onChange(rightVal);
                             });
-
-                            purgeList.forEach(bl -> 
-                                    rightButtonListeners.remove(bl));
                         }                        
                     });
 
                     slideSwitch = getPin(21);
                     slideSwitch.setMode(Pin.Mode.INPUT);
+
+                    // Add a listener that updates registered listeners with
+                    // the switch value
                     slideSwitch.addEventListener(new PinValueChangeAdapter() {
                         @Override
                         public void onValueChange(IOEvent event) {
                             switchVal = ((int)event.getValue() != 0);
-                                
-                            List<WeakReference<ButtonListener>> purgeList =
-                                    new ArrayList<>();
 
                             switchListeners.forEach(bl -> {
-                                if (bl.get() != null)
-                                    bl.get().onChange(switchVal);
-                                else
-                                    purgeList.add(bl);
+                                bl.onChange(switchVal);
                             });
-
-                            purgeList.forEach(bl -> 
-                                    switchListeners.remove(bl));
                         }                     
                     });
                 } catch (IOException e) {
@@ -228,13 +200,23 @@ public class CircuitPlayground extends FirmataDevice {
     }
 
     private double tempC;
-    private final List<WeakReference<TemperatureChangeListener>>
-            tempChangeListeners = new ArrayList<>();
+    private final List<TemperatureChangeListener> tempChangeListeners =
+            new ArrayList<>();
     
+    /**
+     * Get the current temperature in Celsius
+     * 
+     * @return the current temperature 
+     */
     public double getTemperatureC() {
         return tempC;
     }
     
+    /**
+     * Get the current temperature in Fahrenheit
+     * 
+     * @return the current temperature
+     */
     public double getTemperatureF() {
         if (Double.isNaN(tempC)) {
             return Double.NaN;
@@ -243,55 +225,193 @@ public class CircuitPlayground extends FirmataDevice {
         return tempC * 9.0 / 5.0 + 32.0;
     }
     
+    /**
+     * Add a listener that will receive updates on temperature changes
+     * 
+     * @param tcl
+     *          The listener that will receive temperature change updates
+     */
     public void addTempListener(TemperatureChangeListener tcl) {
-        tempChangeListeners.add(new WeakReference<>(tcl));
+        tempChangeListeners.add(tcl);
+    }
+    
+    /**
+     * Prevent a listener from receiving updates on temperature changes
+     * 
+     * @param tcl
+     *          The listener that will no longer receive temperature change 
+     *          updates
+     */
+    public void removeTempListener(TemperatureChangeListener tcl) {
+        tempChangeListeners.remove(tcl);
+    }
+    
+    /**
+     * Prevent all listeners from receiving updates on temperature changes
+     */
+    public void removeAllTempListeners() {
+        tempChangeListeners.clear();
     }
     
     private int micLevel;
-    private final List<WeakReference<MicrophoneListener>>
+    private final List<MicrophoneListener>
             microphoneListeners = new ArrayList<>();
     
+    /**
+     * Get the current level of the microphone input
+     * 
+     * @return a value from 0-1024 
+     */
     public int getSoundLevel() {
         return micLevel;
     }
     
+    /**
+     * Add a listener to receive updates on the microphone level
+     * 
+     * @param ml
+     *          The listener that will receive microphone level updates
+     */
     public void addMicListener(MicrophoneListener ml) {
-        microphoneListeners.add(new WeakReference<>(ml));
+        microphoneListeners.add(ml);
     }
     
-    boolean leftVal;
-    boolean rightVal;
-    boolean switchVal;
+    /**
+     * Stop a listener from receiving updates on the microphone level
+     * 
+     * @param ml 
+     *          The listener that will no longer receive updates on the 
+     *          microphone level
+     */
+    public void removeMicListener(MicrophoneListener ml) {
+        microphoneListeners.remove(ml);
+    }
     
-    private final List<WeakReference<ButtonListener>> leftButtonListeners = 
+    /**
+     * Prevent all listeners from receiving updates on the microphone level
+     */
+    public void removeAllMicListeners() {
+        microphoneListeners.clear();
+    }
+    
+    private boolean leftVal;
+    private boolean rightVal;
+    private boolean switchVal;
+    
+    private final List<ButtonListener> leftButtonListeners = 
         new ArrayList<>();
-    private final List<WeakReference<ButtonListener>> rightButtonListeners = 
+    private final List<ButtonListener> rightButtonListeners = 
         new ArrayList<>();
-    private final List<WeakReference<ButtonListener>> switchListeners = 
+    private final List<ButtonListener> switchListeners = 
         new ArrayList<>();
     
+    
+    /**
+     * Determine the state of the left button.
+     * 
+     * @return true if the left button is pressed, false if it is released 
+     */
     public boolean leftButtonPressed() {
         return leftButton.getValue() != 0;
     }
     
+    /**
+     * Add a listener that will receive updates about the left button.
+     * 
+     * @param bl 
+     *          The listener that will receive updates on the left button. 
+     */
     public void addLeftButtonListener(ButtonListener bl) {
-        leftButtonListeners.add(new WeakReference<>(bl));
+        leftButtonListeners.add(bl);
+    }
+
+    /**
+     * Prevent a listener from receiving updates about the left button.
+     * 
+     * @param bl
+     *          The listener that will no longer receive updates about the 
+     *          left button
+     */
+    public void removeLeftButtonListener(ButtonListener bl) {
+        leftButtonListeners.remove(bl);
+    }
+
+    /**
+     * Prevent all listeners from receiving updates about the left button.
+     */
+    public void removeAllLeftButtonListeners() {
+        leftButtonListeners.clear();
     }
     
+    /**
+     * Determine the state of the right button.
+     * 
+     * @return true if the right button is pressed, false if it is released 
+     */
     public boolean rightButtonPressed() {
         return rightButton.getValue() != 0;
     }
     
+    /**
+     * Add a listener that will receive updates about the right button.
+     * 
+     * @param bl 
+     *          The listener that will receive updates on the right button. 
+     */
     public void addRightButtonListener(ButtonListener bl) {
-        rightButtonListeners.add(new WeakReference<>(bl));
+        rightButtonListeners.add(bl);
+    }
+    
+    /**
+     * Prevent a listener from receiving updates about the right button.
+     * 
+     * @param bl
+     *          The listener that will no longer receive updates about the 
+     *          right button
+     */
+    public void removeRightButtonListener(ButtonListener bl) {
+        rightButtonListeners.remove(bl);
+    }
+    
+    /**
+     * Prevent all listeners from receiving updates about the right button.
+     */
+    public void removeAllRightButtonListeners() {
+        rightButtonListeners.clear();
     }
 
+    /**
+     * Determine if the slide switch is on
+     * 
+     * @return true if the slide switch is on, false otherwise 
+     */
     public boolean switchOn() {
         return slideSwitch.getValue() != 0;
     }
 
+    /**
+     * Add a listener that will receive updates on the slide switch
+     * 
+     * @param bl The listener that will receive updates about the slide switch 
+     */
     public void addSwitchListener(ButtonListener bl) {
-        switchListeners.add(new WeakReference<>(bl));
+        switchListeners.add(bl);
+    }
+    
+    /**
+     * Prevent a listener from receiving updates about the slide switch
+     * 
+     * @param bl the listener to stop receiving updates about the slide switch 
+     */
+    public void removeSwitchListener(ButtonListener bl) {
+        switchListeners.remove(bl);
+    }
+    
+    /**
+     * Prevent all listeners from receiving updates about the slide switch.
+     */
+    public void removeAllSwitchListeners() {
+        switchListeners.clear();
     }
 
     /*
@@ -416,7 +536,7 @@ public class CircuitPlayground extends FirmataDevice {
     };
 
     private Vector3d accel = null;
-    private final List<WeakReference<AccelerationListener>> accelListeners =
+    private final List<AccelerationListener> accelListeners =
             new ArrayList<>();
 
     /**
@@ -565,7 +685,23 @@ public class CircuitPlayground extends FirmataDevice {
      * @param al The AccelerationListener to receive acceleration data.
      */
     public final void addAccelerationListener(AccelerationListener al) {
-        accelListeners.add(new WeakReference<>(al));
+        accelListeners.add(al);
+    }
+    
+    /**
+     * Prevent an AccelerationListener from receiving acceleration data
+     * 
+     * @param al The Acceleration to stop from receiving acceleration data
+     */
+    public final void removeAccelerationListener(AccelerationListener al) {
+        accelListeners.remove(al);
+    }
+    
+    /**
+     * Prevent all AccelerationListeners from receiving acceleration data
+     */
+    public final void removeAllAccelerationListeners() {
+        accelListeners.clear();
     }
 
     private void setAccelerationData(Vector3d data) {
@@ -580,18 +716,9 @@ public class CircuitPlayground extends FirmataDevice {
         
         setAccelerationData(accelVector);
         
-        List<WeakReference<AccelerationListener>> purgeList = new ArrayList<>();
-        
         accelListeners.forEach((al) -> {
-            if (al.get() != null) {
-                al.get().onAccelData(accelVector);
-            }
-            else {
-                purgeList.add(al);
-            }
+            al.onAccelData(accelVector);            
         });
-        
-        purgeList.forEach(al -> accelListeners.remove(al));
     }
     
     /*
@@ -708,6 +835,22 @@ public class CircuitPlayground extends FirmataDevice {
     public final void addTapListener(TapListener tl) {
         tapListeners.add(tl);
     }
+    
+    /**
+     * Prevent a TapListener from receiving tap data
+     * 
+     * @param tl the TapListener to stop from receiving tap data 
+     */
+    public final void removeTapListener(TapListener tl) {
+        tapListeners.remove(tl);
+    }
+    
+    /**
+     * Prevent all TapListeners from receiving tap data
+     */
+    public final void removeAllTapListeners() {
+        tapListeners.clear();
+    }
 
     private void setTapData(Tap data) {
         this.tapData = data;
@@ -739,8 +882,8 @@ public class CircuitPlayground extends FirmataDevice {
     /*
      * Capacitive Touch Commands ***********************************************
      */
-    int touchData[] = new int[13];
-    List<WeakReference<TouchListener>> touchListeners = new ArrayList<>();
+    private final int touchData[] = new int[13];
+    private final List<TouchListener> touchListeners = new ArrayList<>();
 
     /**
      * Request that the CircuitPlayground send the most recent touch data for a
@@ -834,7 +977,23 @@ public class CircuitPlayground extends FirmataDevice {
      * @param tl The TapListener to receive tap data.
      */
     public final void addTouchListener(TouchListener tl) {
-        touchListeners.add(new WeakReference<>(tl));
+        touchListeners.add(tl);
+    }
+    
+    /**
+     * Stop a TouchListener from receiving touch data
+     * 
+     * @param tl the TouchListener to stop receiving touch data
+     */
+    public final void removeTouchListener(TouchListener tl) {
+        touchListeners.remove(tl);
+    }
+    
+    /**
+     * Stop all touch listeners from receiving touch data
+     */
+    public final void removeAllTouchListeners() {
+        touchListeners.clear();
     }
 
     private void setTouchData(int pin, int data) {
@@ -847,23 +1006,16 @@ public class CircuitPlayground extends FirmataDevice {
         
         setTouchData(pin, level);
         
-        List<WeakReference<TouchListener>> purgeList = new ArrayList<>();
-        
         touchListeners.forEach((tl) -> {
-            if (tl.get() != null) 
-                tl.get().onTouch(pin, level);
-            else
-                purgeList.add(tl);
+            tl.onTouch(pin, level);
         });
-        
-        purgeList.forEach(tl -> touchListeners.remove(tl));
     }
 
     /*
      * Color Sensing Commands **************************************************
      */
-    Color sensed = null;
-    List<WeakReference<ColorListener>> colorListeners = new ArrayList<>();
+    private Color sensed = null;
+    private final List<ColorListener> colorListeners = new ArrayList<>();
 
     /**
      * Request that the Circuit Playground perform a color sense operation and
@@ -899,7 +1051,23 @@ public class CircuitPlayground extends FirmataDevice {
      * @param cl The ColorListener to receive color data
      */
     public void addColorListener(ColorListener cl) {
-        colorListeners.add(new WeakReference<>(cl));
+        colorListeners.add(cl);
+    }
+    
+    /**
+     * Stop a color listener from receiving color data.
+     * 
+     * @param cl The color listener to remove
+     */
+    public void removeColorListener(ColorListener cl) {
+        colorListeners.remove(cl);
+    }    
+    
+    /**
+     * Stop all color listeners from receiving color data
+     */
+    public void removeAllColorListeners() {
+        colorListeners.clear();
     }
     
     private void setSensedColor(Color c) {
@@ -913,15 +1081,9 @@ public class CircuitPlayground extends FirmataDevice {
         
         setSensedColor(c);
         
-        List<WeakReference<ColorListener>> purgeList = new ArrayList<>();
         colorListeners.forEach((cl) -> {
-            if (cl.get() != null) 
-                cl.get().onColor(c);
-            else
-                purgeList.add(cl);
+            cl.onColor(c);
         });
-        
-        purgeList.forEach(cl -> colorListeners.remove(cl));
     }
     
     @Override
