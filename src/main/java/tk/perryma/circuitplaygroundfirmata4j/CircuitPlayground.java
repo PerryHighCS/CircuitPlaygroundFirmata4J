@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.vecmath.Vector3d;
-import jssc.SerialPortList;
 import org.firmata4j.firmata.FirmataDevice;
 import org.firmata4j.IOEvent;
 import org.firmata4j.Pin;
@@ -47,6 +46,7 @@ public class CircuitPlayground extends FirmataDevice {
     private Pin leftButton;
     private Pin rightButton;
     private Pin slideSwitch;
+    private Pin led;
 
     /**
      * Create a CircuitPlayground instance connected to a given serial port.
@@ -77,7 +77,14 @@ public class CircuitPlayground extends FirmataDevice {
             @Override
             public void onStart(IOEvent ioe) {
                 try {
+                    clearNeoPixels();
+                    showNeoPixels();
+                    
                     // Connect hardwired peripherials to their pins
+                    led = getPin(13);
+                    led.setMode(Pin.Mode.OUTPUT);
+                    led.setValue(0);
+                    
                     lightSensor = getPin(23);
                     lightSensor.setMode(Pin.Mode.ANALOG);
 
@@ -194,6 +201,24 @@ public class CircuitPlayground extends FirmataDevice {
     /*
      * Simple Peripherials *****************************************************
      */
+    
+    /**
+     * Turn the built-in LED on pin 13 on/off
+     * 
+     * @param on
+     *          true if LED should turn on, false for off
+     * 
+     * @throws IOException 
+     *          if the command cannot be sent to the Circuit Playground 
+     */
+    public void setLED(boolean on) throws IOException {
+        if (on) {
+            led.setValue(1);
+        }
+        else {
+            led.setValue(0);
+        }
+    }
     
     public int getLightLevel() {
         return (int)lightSensor.getValue();
