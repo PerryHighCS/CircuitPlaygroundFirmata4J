@@ -77,10 +77,10 @@ public class CircuitPlaygroundMessageFactory {
         blue &= 0xFF;
         
         byte[] bytes = new byte[4];
-        bytes[0] = (byte) (red >> 1);                          // Pack RGB 8-bit values 
-        bytes[1] = (byte) ((red >> 7 << 6) | green >> 2);      // tightly into 4 7-bit
-        bytes[2] = (byte) ((green >> 6 << 5) | (blue >> 3));   // bytes
-        bytes[3] = (byte) (blue >> 5 << 4);
+        bytes[0] = (byte) (red >>> 1);                           // Pack RGB 8-bit values 
+        bytes[1] = (byte) ((red >>> 7 << 6) | green >>> 2);      // tightly into 4 7-bit
+        bytes[2] = (byte) ((green >>> 6 << 5) | (blue >>> 3));   // bytes
+        bytes[3] = (byte) (blue >>> 5 << 4);
         
         return new byte[] {
             START_SYSEX, 
@@ -135,9 +135,9 @@ public class CircuitPlaygroundMessageFactory {
             CIRCUIT_PLAYGROUND_CMD,
             PLAY_TONE_CMD,
             (byte)(freq & 0x7F),
-            (byte)((freq >> 7) & 0x7F),
+            (byte)((freq >>> 7) & 0x7F),
             (byte)(duration & 0x7F),
-            (byte)((duration >> 7) & 0x7F),
+            (byte)((duration >>> 7) & 0x7F),
             END_SYSEX 
         };
     }

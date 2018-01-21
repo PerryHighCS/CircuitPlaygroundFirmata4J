@@ -3,7 +3,6 @@ package tk.perryma.circuitplaygroundfirmata4j.parser;
 import static org.firmata4j.firmata.parser.FirmataToken.END_SYSEX;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import static org.firmata4j.firmata.parser.FirmataToken.FIRMATA_MESSAGE_EVENT_TYPE;
-import static tk.perryma.circuitplaygroundfirmata4j.parser.MIDIParser.parseByte;
 import org.firmata4j.fsm.AbstractState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;

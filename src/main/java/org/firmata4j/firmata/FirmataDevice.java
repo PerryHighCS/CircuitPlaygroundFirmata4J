@@ -365,12 +365,12 @@ public class FirmataDevice implements IODevice {
     @SuppressWarnings("unchecked")
     private void onAnalogMappingReceive(Event event) {
         analogMapping = (Map<Integer, Integer>) event.getBodyItem(ANALOG_MAPPING);
-//        try {
-//            sendMessage(FirmataMessageFactory.analogReport(true));
-//            sendMessage(FirmataMessageFactory.digitalReport(true));
-//        } catch (IOException ex) {
-//            LOGGER.error("Cannot enable reporting from device", ex);
-//        }
+        try {
+            sendMessage(FirmataMessageFactory.analogReport(true));
+            sendMessage(FirmataMessageFactory.digitalReport(true));
+        } catch (IOException ex) {
+            LOGGER.error("Cannot enable reporting from device", ex);
+        }
         ready.set(true);
         // all the pins are initialized so notification is sent to listeners
         IOEvent initIsDone = new IOEvent(this);
@@ -432,9 +432,9 @@ public class FirmataDevice implements IODevice {
     }
 
     protected void handleEvent(Event event) {
-        LOGGER.info("Event name: {}, type: {}, timestamp: {}", event.getName(), event.getType(), event.getTimestamp());
+        LOGGER.debug("Event name: {}, type: {}, timestamp: {}", event.getName(), event.getType(), event.getTimestamp());
         for (Map.Entry<String, Object> entry : event.getBody().entrySet()) {
-            LOGGER.info("{}: {}", entry.getKey(), entry.getValue());
+            LOGGER.debug("{}: {}", entry.getKey(), entry.getValue());
         }
         //LOGGER.debug("\n");
         switch (event.getName()) {

@@ -7,6 +7,7 @@ package tk.perryma.circuitplaygroundfirmata4j;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,7 +74,7 @@ public class CircuitPlayground extends FirmataDevice {
     public void start() throws IOException {
         
         // Add listeners for the built in sensors
-        addEventListener(new IODeviceStartListener() {
+        addEventListener(new IODeviceStartAdapter() {
             @Override
             public void onStart(IOEvent ioe) {
                 try {
@@ -83,18 +84,133 @@ public class CircuitPlayground extends FirmataDevice {
 
                     temperatureSensor = getPin(18);
                     temperatureSensor.setMode(Pin.Mode.ANALOG);
-
+                    temperatureSensor.addEventListener(new PinValueChangeAdapter(){
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            final double THERM_SERIES_OHMS  = 10000.0;  // Resistor value in series with thermistor.
+                            final double THERM_NOMINAL_OHMS = 10000.0;  // Thermistor resistance at 25 degrees C.
+                            final double THERM_NOMIMAL_C    = 25.0;     // Thermistor temperature at nominal resistance.
+                            final double THERM_BETA         = 3950.0;   // Thermistor beta coefficient.
+                            int val = (int)event.getValue();
+                            
+                            if (val == 0) { 
+                                tempC = Double.NaN;
+                            }
+                            else {    
+                                double resistance = ((1023.0 * 
+                                        THERM_SERIES_OHMS) / val);
+                                resistance -= THERM_SERIES_OHMS;
+                                double steinhart = resistance /
+                                        THERM_NOMINAL_OHMS;
+                                steinhart = Math.log(steinhart);
+                                steinhart /= THERM_BETA;
+                                steinhart += 1.0 / (THERM_NOMIMAL_C + 273.15);
+                                steinhart = 1.0 / steinhart;
+                                steinhart -= 273.15;
+                                tempC = steinhart;
+                            }
+                            
+                            List<WeakReference<TemperatureChangeListener>> purgeList =
+                                    new ArrayList<>();
+                            
+                            tempChangeListeners.forEach(tcl -> {
+                                if (tcl.get() != null)
+                                    tcl.get().onTempChange(tempC);
+                                else
+                                    purgeList.add(tcl);
+                            });
+                            
+                            purgeList.forEach(tcl -> tempChangeListeners.remove(tcl));
+                        }                        
+                    });
+                    
                     microphone = getPin(22);
                     microphone.setMode(Pin.Mode.ANALOG);
+                    microphone.addEventListener(new PinValueChangeAdapter() {
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            micLevel = (int)event.getValue();
+                            
+                            List<WeakReference<MicrophoneListener>> purgeList =
+                                    new ArrayList<>();
+                            
+                            microphoneListeners.forEach(ml -> {
+                               if (ml.get() != null)
+                                   ml.get().onMicrophoneChange(micLevel);
+                               else
+                                   purgeList.add(ml);
+                            });
+                            
+                            purgeList.forEach(ml -> 
+                                    microphoneListeners.remove(ml));
+                        }
+                    });
 
                     leftButton = getPin(4);
                     leftButton.setMode(Pin.Mode.INPUT);
+                    leftButton.addEventListener(new PinValueChangeAdapter() {
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            leftVal = ((int)event.getValue() != 0);
+                            
+                            List<WeakReference<ButtonListener>> purgeList =
+                                    new ArrayList<>();
+
+                            leftButtonListeners.forEach(bl -> {
+                                if (bl.get() != null)
+                                    bl.get().onChange(leftVal);
+                                else
+                                    purgeList.add(bl);
+                            });
+
+                            purgeList.forEach(bl -> 
+                                    leftButtonListeners.remove(bl));
+                        }                        
+                    });
 
                     rightButton = getPin(19);
                     rightButton.setMode(Pin.Mode.INPUT);
+                    rightButton.addEventListener(new PinValueChangeAdapter() {
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            rightVal = ((int)event.getValue() != 0);
+                                
+                            List<WeakReference<ButtonListener>> purgeList =
+                                    new ArrayList<>();
+
+                            rightButtonListeners.forEach(bl -> {
+                                if (bl.get() != null)
+                                    bl.get().onChange(rightVal);
+                                else
+                                    purgeList.add(bl);
+                            });
+
+                            purgeList.forEach(bl -> 
+                                    rightButtonListeners.remove(bl));
+                        }                        
+                    });
 
                     slideSwitch = getPin(21);
                     slideSwitch.setMode(Pin.Mode.INPUT);
+                    slideSwitch.addEventListener(new PinValueChangeAdapter() {
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            switchVal = ((int)event.getValue() != 0);
+                                
+                            List<WeakReference<ButtonListener>> purgeList =
+                                    new ArrayList<>();
+
+                            switchListeners.forEach(bl -> {
+                                if (bl.get() != null)
+                                    bl.get().onChange(switchVal);
+                                else
+                                    purgeList.add(bl);
+                            });
+
+                            purgeList.forEach(bl -> 
+                                    switchListeners.remove(bl));
+                        }                     
+                    });
                 } catch (IOException e) {
                 }
             }
@@ -103,6 +219,81 @@ public class CircuitPlayground extends FirmataDevice {
         super.start();
     }
     
+    /*
+     * Simple Peripherials *****************************************************
+     */
+    
+    public int getLightLevel() {
+        return (int)lightSensor.getValue();
+    }
+
+    private double tempC;
+    private final List<WeakReference<TemperatureChangeListener>>
+            tempChangeListeners = new ArrayList<>();
+    
+    public double getTemperatureC() {
+        return tempC;
+    }
+    
+    public double getTemperatureF() {
+        if (Double.isNaN(tempC)) {
+            return Double.NaN;
+        }
+        
+        return tempC * 9.0 / 5.0 + 32.0;
+    }
+    
+    public void addTempListener(TemperatureChangeListener tcl) {
+        tempChangeListeners.add(new WeakReference<>(tcl));
+    }
+    
+    private int micLevel;
+    private final List<WeakReference<MicrophoneListener>>
+            microphoneListeners = new ArrayList<>();
+    
+    public int getSoundLevel() {
+        return micLevel;
+    }
+    
+    public void addMicListener(MicrophoneListener ml) {
+        microphoneListeners.add(new WeakReference<>(ml));
+    }
+    
+    boolean leftVal;
+    boolean rightVal;
+    boolean switchVal;
+    
+    private final List<WeakReference<ButtonListener>> leftButtonListeners = 
+        new ArrayList<>();
+    private final List<WeakReference<ButtonListener>> rightButtonListeners = 
+        new ArrayList<>();
+    private final List<WeakReference<ButtonListener>> switchListeners = 
+        new ArrayList<>();
+    
+    public boolean leftButtonPressed() {
+        return leftButton.getValue() != 0;
+    }
+    
+    public void addLeftButtonListener(ButtonListener bl) {
+        leftButtonListeners.add(new WeakReference<>(bl));
+    }
+    
+    public boolean rightButtonPressed() {
+        return rightButton.getValue() != 0;
+    }
+    
+    public void addRightButtonListener(ButtonListener bl) {
+        rightButtonListeners.add(new WeakReference<>(bl));
+    }
+
+    public boolean switchOn() {
+        return slideSwitch.getValue() != 0;
+    }
+
+    public void addSwitchListener(ButtonListener bl) {
+        switchListeners.add(new WeakReference<>(bl));
+    }
+
     /*
      * Neo Pixel Commands ******************************************************
      */
@@ -225,7 +416,8 @@ public class CircuitPlayground extends FirmataDevice {
     };
 
     private Vector3d accel = null;
-    private final List<AccelerationListener> accelListeners = new ArrayList<>();
+    private final List<WeakReference<AccelerationListener>> accelListeners =
+            new ArrayList<>();
 
     /**
      * Request a single accelerometer reading. The accelerometer reading can be
@@ -237,7 +429,6 @@ public class CircuitPlayground extends FirmataDevice {
      */
     public void requestAccelData() throws IOException {
         accel = null;
-
         sendMessage(CircuitPlaygroundMessageFactory.requestAccelData);
     }
 
@@ -374,7 +565,7 @@ public class CircuitPlayground extends FirmataDevice {
      * @param al The AccelerationListener to receive acceleration data.
      */
     public final void addAccelerationListener(AccelerationListener al) {
-        accelListeners.add(al);
+        accelListeners.add(new WeakReference<>(al));
     }
 
     private void setAccelerationData(Vector3d data) {
@@ -389,9 +580,18 @@ public class CircuitPlayground extends FirmataDevice {
         
         setAccelerationData(accelVector);
         
+        List<WeakReference<AccelerationListener>> purgeList = new ArrayList<>();
+        
         accelListeners.forEach((al) -> {
-            al.onAccelData(accelVector);
+            if (al.get() != null) {
+                al.get().onAccelData(accelVector);
+            }
+            else {
+                purgeList.add(al);
+            }
         });
+        
+        purgeList.forEach(al -> accelListeners.remove(al));
     }
     
     /*
@@ -540,7 +740,7 @@ public class CircuitPlayground extends FirmataDevice {
      * Capacitive Touch Commands ***********************************************
      */
     int touchData[] = new int[13];
-    List<TouchListener> touchListeners = new ArrayList<>();
+    List<WeakReference<TouchListener>> touchListeners = new ArrayList<>();
 
     /**
      * Request that the CircuitPlayground send the most recent touch data for a
@@ -634,7 +834,7 @@ public class CircuitPlayground extends FirmataDevice {
      * @param tl The TapListener to receive tap data.
      */
     public final void addTouchListener(TouchListener tl) {
-        touchListeners.add(tl);
+        touchListeners.add(new WeakReference<>(tl));
     }
 
     private void setTouchData(int pin, int data) {
@@ -647,16 +847,23 @@ public class CircuitPlayground extends FirmataDevice {
         
         setTouchData(pin, level);
         
+        List<WeakReference<TouchListener>> purgeList = new ArrayList<>();
+        
         touchListeners.forEach((tl) -> {
-            tl.onTouch(pin, level);
+            if (tl.get() != null) 
+                tl.get().onTouch(pin, level);
+            else
+                purgeList.add(tl);
         });
+        
+        purgeList.forEach(tl -> touchListeners.remove(tl));
     }
 
     /*
      * Color Sensing Commands **************************************************
      */
     Color sensed = null;
-    List<ColorListener> colorListeners = new ArrayList<>();
+    List<WeakReference<ColorListener>> colorListeners = new ArrayList<>();
 
     /**
      * Request that the Circuit Playground perform a color sense operation and
@@ -692,7 +899,7 @@ public class CircuitPlayground extends FirmataDevice {
      * @param cl The ColorListener to receive color data
      */
     public void addColorListener(ColorListener cl) {
-        colorListeners.add(cl);
+        colorListeners.add(new WeakReference<>(cl));
     }
     
     private void setSensedColor(Color c) {
@@ -706,9 +913,15 @@ public class CircuitPlayground extends FirmataDevice {
         
         setSensedColor(c);
         
+        List<WeakReference<ColorListener>> purgeList = new ArrayList<>();
         colorListeners.forEach((cl) -> {
-            cl.onColor(c);
+            if (cl.get() != null) 
+                cl.get().onColor(c);
+            else
+                purgeList.add(cl);
         });
+        
+        purgeList.forEach(cl -> colorListeners.remove(cl));
     }
     
     @Override
@@ -810,6 +1023,12 @@ public class CircuitPlayground extends FirmataDevice {
             device.streamTapData(true);
             
             device.requestColorSense();
+            
+            device.addTempListener((temp) -> {
+                double tempF = temp * 9 / 5 + 32;
+                System.out.println("Temperature: " + tempF + " F");
+                
+            });
 
         } catch (IOException e) {
             System.out.println(e.toString());

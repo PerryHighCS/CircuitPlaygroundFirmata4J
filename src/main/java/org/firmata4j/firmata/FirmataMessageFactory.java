@@ -227,7 +227,7 @@ public class FirmataMessageFactory {
     }
 
     /**
-     * Creates Firmata message to set value of an output pin in PWM mode.<br/>
+     * Creates Firmata message to set value of an output pin in PWM mode.<br>
      * If pin id is beyond 15th or value is greater than we can put into
      * standard analog message, extended analog message is built.
      *

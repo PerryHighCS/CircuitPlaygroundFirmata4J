@@ -44,7 +44,7 @@ public class FirmataPin implements Pin {
     private final FirmataDevice device;
     private final byte pinId;
     private final Set<Mode> supportedModes = Collections.synchronizedSet(EnumSet.noneOf(Mode.class));
-    private final Set<PinEventListener> listeners = Collections.synchronizedSet(new HashSet<PinEventListener>());
+    private final Set<PinEventListener> listeners = Collections.synchronizedSet(new HashSet<>());
     private volatile Mode currentMode;
     private volatile long currentValue;
 

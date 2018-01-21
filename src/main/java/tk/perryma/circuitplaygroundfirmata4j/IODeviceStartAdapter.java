@@ -12,7 +12,7 @@ import org.firmata4j.IOEvent;
  *
  * @author dahlem.brian
  */
-public abstract class IODeviceStartListener implements IODeviceEventListener {
+public abstract class IODeviceStartAdapter implements IODeviceEventListener {
 
     @Override
     public abstract void onStart(IOEvent ioe);
