@@ -34,7 +34,7 @@ import static org.firmata4j.firmata.parser.FirmataToken.*;
 
 /**
  * This state parses analog mapping message and fires an event that contains
- * information about how the analog ports match to the pin indexes.<br/>
+ * information about how the analog ports match to the pin indexes.<br>
  * After receiving the last byte, the state transfers FSM to
  * {@link WaitingForMessageState}.
  *
@@ -43,7 +43,7 @@ import static org.firmata4j.firmata.parser.FirmataToken.*;
 public class ParsingAnalogMappingState extends AbstractState {
 
     private int portId;
-    private final Map<Integer, Integer> mapping = new ConcurrentHashMap<Integer, Integer>();
+    private final Map<Integer, Integer> mapping = new ConcurrentHashMap<>();
 
     public ParsingAnalogMappingState(FiniteStateMachine fsm) {
         super(fsm);
@@ -56,6 +56,8 @@ public class ParsingAnalogMappingState extends AbstractState {
             evt.setBodyItem(ANALOG_MAPPING, mapping);
             publish(evt);
             transitTo(WaitingForMessageState.class);
+            
+            System.out.println("Analog Pin Mapping: " + mapping);
         } else if (b != 127) { // if pin does support analog, corresponding analog id is in the byte
             mapping.put((int) b, portId);
         }

@@ -22,18 +22,18 @@ import tk.perryma.circuitplaygroundfirmata4j.CircuitPlayground;
  * @author bdahl
  */
 public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
-    private CircuitPlayground cp;
-    
+
+    private final CircuitPlayground cp;
+
     /**
-     * Creates new CircuitPlaygroundDisplay to interact with a Circuit 
+     * Creates new CircuitPlaygroundDisplay to interact with a Circuit
      * Playground using firmata
-     * 
-     * @param cp
-     *          The CircuitPlayground to display the status of
+     *
+     * @param cp The CircuitPlayground to display the status of
      */
     public CircuitPlaygroundDisplay(CircuitPlayground cp) {
         this.cp = cp;
-        
+
         initComponents();
     }
 
@@ -46,22 +46,34 @@ public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cpDisplay = new CircuitPlaygroundStatus(cp);
+        pin3Config = new PinConfig(cp, 3);
+        boardDisplay1 = new BoardDisplay(cp);
+        pin2Config = new PinConfig(cp, 2);
+        pin1Config = new PinConfig(cp, 1);
+        pin0Config = new PinConfig(cp, 0);
+        pin10Config = new PinConfig(cp,  28);
+        pin9Config = new PinConfig(cp, 27);
+        pin6Config = new PinConfig(cp, 25);
+        pin12Config = new PinConfig(cp, 29);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("CircuitPlaygroundFirmata Demo");
+        setMinimumSize(new java.awt.Dimension(1400, 800));
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
-        cpDisplay.setPreferredSize(new java.awt.Dimension(800, 800));
-
-        javax.swing.GroupLayout cpDisplayLayout = new javax.swing.GroupLayout(cpDisplay);
-        cpDisplay.setLayout(cpDisplayLayout);
-        cpDisplayLayout.setHorizontalGroup(
-            cpDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout boardDisplay1Layout = new javax.swing.GroupLayout(boardDisplay1);
+        boardDisplay1.setLayout(boardDisplay1Layout);
+        boardDisplay1Layout.setHorizontalGroup(
+            boardDisplay1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 800, Short.MAX_VALUE)
         );
-        cpDisplayLayout.setVerticalGroup(
-            cpDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        boardDisplay1Layout.setVerticalGroup(
+            boardDisplay1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 800, Short.MAX_VALUE)
         );
 
@@ -70,40 +82,83 @@ public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(124, 124, 124)
-                .addComponent(cpDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pin3Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin2Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin1Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin0Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0)
+                .addComponent(boardDisplay1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pin10Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin9Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin12Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pin6Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(cpDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(boardDisplay1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(50, 50, 50)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(pin3Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(45, 45, 45)
+                        .addComponent(pin2Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pin0Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(50, 50, 50)
+                        .addComponent(pin1Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(pin10Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(45, 45, 45)
+                        .addComponent(pin9Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pin6Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(50, 50, 50)
+                        .addComponent(pin12Config, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(50, 50, 50))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        pin0Config.showPin();
+        pin1Config.showPin();
+        pin2Config.showPin();
+        pin3Config.showPin();
+        pin6Config.showPin();
+        pin9Config.showPin();
+        pin10Config.showPin();
+        pin12Config.showPin();
+    }//GEN-LAST:event_formWindowOpened
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         String port = requestPort();
-        
+
         CircuitPlayground cp = new CircuitPlayground(port);
-        
+
         try {
             cp.start();
             cp.ensureInitializationIsDone();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(null,
-                    "Could not communicate with Circuit Playground on port " 
+                    "Could not communicate with Circuit Playground on port "
                     + port, "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             System.exit(0);
         }
-        
+
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -132,8 +187,8 @@ public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
             new CircuitPlaygroundDisplay(cp).setVisible(true);
         });
     }
-    
-        private static String requestPort() {
+
+    private static String requestPort() {
         JComboBox<String> portNameSelector = new JComboBox<>();
         portNameSelector.setModel(new DefaultComboBoxModel<>());
         String[] portNames;
@@ -163,6 +218,14 @@ public class CircuitPlaygroundDisplay extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel cpDisplay;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.BoardDisplay boardDisplay1;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin0Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin10Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin12Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin1Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin2Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin3Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin6Config;
+    private tk.perryma.circuitplaygroundfirmata4j.ui.PinConfig pin9Config;
     // End of variables declaration//GEN-END:variables
 }
