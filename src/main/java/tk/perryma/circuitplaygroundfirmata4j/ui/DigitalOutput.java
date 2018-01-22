@@ -39,9 +39,6 @@ public class DigitalOutput extends PinPanel {
 
         outputToggle = new javax.swing.JToggleButton();
 
-        setMaximumSize(new java.awt.Dimension(276, 43));
-        setMinimumSize(new java.awt.Dimension(276, 43));
-        setPreferredSize(new java.awt.Dimension(276, 43));
         setLayout(new java.awt.BorderLayout());
 
         outputToggle.setText("Off");

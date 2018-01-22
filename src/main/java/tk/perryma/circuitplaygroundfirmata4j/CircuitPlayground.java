@@ -88,6 +88,16 @@ public class CircuitPlayground extends FirmataDevice {
                     lightSensor = getPin(23);
                     lightSensor.setMode(Pin.Mode.ANALOG);
 
+                    lightSensor.addEventListener(new PinValueChangeAdapter() {
+                        @Override
+                        public void onValueChange(IOEvent event) {
+                            int val = (int)event.getValue();
+                            lightListeners.forEach(lcl -> {
+                                lcl.onLightChange(val);                                
+                            });
+                        }
+                    });
+                    
                     temperatureSensor = getPin(18);
                     temperatureSensor.setMode(Pin.Mode.ANALOG);
                     
@@ -220,9 +230,48 @@ public class CircuitPlayground extends FirmataDevice {
         }
     }
     
+    private final List<LightChangeListener> lightListeners = 
+            new ArrayList<>();
+    
+    /**
+     * Get the current light level
+     * 
+     * @return
+     *      The current light sensor reading (0-1023)
+     */
     public int getLightLevel() {
         return (int)lightSensor.getValue();
     }
+    
+    
+    /**
+     * Add a listener that will receive updates on lighting changes
+     * 
+     * @param lcl
+     *          The listener that will receive lighting change updates
+     */
+    public void addLightListener(LightChangeListener lcl) {
+        lightListeners.add(lcl);
+    }
+    
+    /**
+     * Prevent a listener from receiving updates on lighting changes
+     * 
+     * @param lcl
+     *          The listener that will no longer receive lighting change 
+     *          updates
+     */
+    public void removeLightListener(LightChangeListener lcl) {
+        lightListeners.remove(lcl);
+    }
+    
+    /**
+     * Prevent all listeners from receiving updates on lighting changes
+     */
+    public void removeAllLightListeners() {
+        lightListeners.clear();
+    }
+    
 
     private double tempC;
     private final List<TemperatureChangeListener> tempChangeListeners =
