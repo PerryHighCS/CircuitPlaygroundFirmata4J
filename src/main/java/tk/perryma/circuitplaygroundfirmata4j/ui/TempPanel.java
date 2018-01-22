@@ -50,6 +50,7 @@ public class TempPanel extends javax.swing.JPanel implements TemperatureChangeLi
         setMaximumSize(new java.awt.Dimension(300, 100));
         setMinimumSize(new java.awt.Dimension(300, 100));
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Current Temperature:");
 
         tempFLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
@@ -75,7 +76,7 @@ public class TempPanel extends javax.swing.JPanel implements TemperatureChangeLi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 149, Short.MAX_VALUE))
+                        .addGap(0, 106, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tempFLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -91,7 +92,7 @@ public class TempPanel extends javax.swing.JPanel implements TemperatureChangeLi
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tempFLabel)
                     .addComponent(jLabel3)

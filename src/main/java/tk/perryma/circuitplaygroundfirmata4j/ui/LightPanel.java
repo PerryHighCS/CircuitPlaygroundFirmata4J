@@ -36,6 +36,7 @@ public class LightPanel extends javax.swing.JPanel implements LightChangeListene
         setMaximumSize(new java.awt.Dimension(300, 100));
         setMinimumSize(new java.awt.Dimension(300, 100));
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Light Level:");
 
         lightLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
@@ -50,7 +51,7 @@ public class LightPanel extends javax.swing.JPanel implements LightChangeListene
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addComponent(jLabel1)
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addContainerGap(197, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(lightLabel)
@@ -61,7 +62,7 @@ public class LightPanel extends javax.swing.JPanel implements LightChangeListene
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addComponent(lightLabel)
                 .addContainerGap())
         );
